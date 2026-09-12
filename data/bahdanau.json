@@ -1,0 +1,267 @@
+{
+  "id": "bahdanau",
+  "order": 4,
+  "short": "Bahdanau Attention",
+  "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+  "authors": "Dzmitry Bahdanau, KyungHyun Cho, Yoshua Bengio",
+  "year": 2014,
+  "venue": "ICLR 2015",
+  "arxiv": "1409.0473",
+  "url": "https://arxiv.org/abs/1409.0473",
+  "category": "Attention",
+  "category_ko": "어텐션의 시작",
+  "why_must_read": "attention이라는 개념을 처음 제안한 논문입니다. 3년 뒤 나올 Attention Is All You Need는 사실 이 논문이 처음 던진 질문 '고정된 벡터 하나에 문장 전체를 욱여넣지 않으려면 어떻게 해야 할까'에 대한 답을 극단까지 밀어붙인 결과입니다. 결론부터 읽지 말고 이 논문으로 먼저 질문을 만나보세요.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": ["p008", "p009"],
+      "structure": [
+        "차별점: 입력 문장 전체를 고정된 벡터 하나로 욱여넣지 않는다",
+        "대신 하는 일: 입력을 벡터의 시퀀스로 인코딩하고, 번역하면서 그 중 필요한 부분을 적응적으로 골라 쓴다",
+        "그 효과: 문장 길이와 무관하게 모든 정보를 하나의 벡터에 눌러 담을 필요가 없어진다",
+        "성능 결과: 특히 긴 문장에서 더 나은 성능을 낸다",
+        "구체적 성과: 영어-프랑스어 번역에서 단일 모델로 전통적인 구 기반 시스템에 필적하는 성능",
+        "부가 발견: 정성적으로 봐도 언어학적으로 그럴듯한 정렬을 스스로 찾아낸다"
+      ],
+      "key_concepts": {
+        "basic encoder–decoder": "이 논문 이전의 표준 방식. 입력 문장 전체를 고정 크기 벡터 하나로 압축한 뒤, 그 벡터 하나만으로 번역 전체를 만들어냅니다.",
+        "fixed-length vector": "길이가 항상 똑같은 벡터. 문장이 5단어든 50단어든 똑같은 크기의 벡터에 눌러 담아야 하는 것이 기존 방식의 근본적 한계였습니다.",
+        "sequence of vectors": "이 논문의 대안. 문장을 벡터 하나가 아니라, 단어 수만큼의 벡터 여러 개로 인코딩합니다.",
+        "adaptively choose": "적응적으로 고르다. 번역할 단어마다 입력 벡터들 중 어디를 더 참고할지 그때그때 다르게 정합니다. 이것이 바로 attention의 정체입니다.",
+        "cope with long sentences": "긴 문장을 잘 처리하다. 고정 벡터 방식은 문장이 길어질수록 성능이 급격히 나빠지는데, 이 논문의 방법은 그 문제를 완화합니다.",
+        "phrase-based system": "신경망 이전의 전통적 번역 방식. 구(phrase) 단위 사전과 통계 규칙을 결합해 번역합니다. 당시까지 신경망 번역보다 나은 성능을 냈습니다.",
+        "linguistically plausible (soft-)alignment": "언어학적으로 그럴듯한 (부드러운) 정렬. 모델이 번역할 때 원문의 어느 단어를 보고 있는지 시각화해보면, 실제로 의미가 대응하는 단어를 짚어낸다는 뜻입니다."
+      },
+      "summary": "이 접근법이 기본 encoder-decoder와 가장 다른 점은 입력 문장 전체를 고정 길이 벡터 하나로 압축하려 하지 않는다는 것이다. 대신 입력 문장을 벡터들의 시퀀스로 인코딩하고, 번역을 만들어가면서 이 벡터들 중 필요한 부분을 적응적으로 골라 쓴다. 그 덕분에 문장 길이와 상관없이 모든 정보를 하나의 벡터에 욱여넣을 필요가 없어지고, 특히 긴 문장에서 더 잘 대응한다. 영어-프랑스어 번역에서 이 방법은 단일 모델로 전통적인 구 기반 시스템에 필적하거나 근접하는 성능을 냈고, 정성적 분석에서는 모델이 원문과 번역문 사이에 언어학적으로 그럴듯한 정렬을 스스로 찾아낸다는 것도 확인됐다.",
+      "sentences_ko": [
+        {"ko": "이 접근법이 기본적인 encoder-decoder와 가장 다른 핵심 특징은, 입력 문장 전체를 하나의 고정 길이 벡터로 인코딩하려 하지 않는다는 점이다.", "note": "distinguishing feature from ~: ~와 구별되는 특징. 논문 전체의 핵심 주장을 첫 문장에서 바로 던집니다."},
+        {"ko": "대신 입력 문장을 벡터들의 시퀀스로 인코딩하고, 번역을 디코딩하는 동안 이 벡터들 중 일부를 적응적으로 고른다.", "note": "Instead가 앞 문장의 부정과 대비되는 실제 방법을 제시합니다. while decoding이 '언제' 고르는지를 명시합니다."},
+        {"ko": "이는 신경망 번역 모델이 원본 문장의 길이와 상관없이 모든 정보를 고정 길이 벡터 하나에 욱여넣어야 하는 부담에서 벗어나게 해준다.", "note": "free A from -ing: A를 ~하는 부담에서 벗어나게 하다. squash는 '억지로 눌러 담다'라는 뉘앙스를 가진 동사입니다."},
+        {"ko": "우리는 이것이 모델로 하여금 긴 문장을 더 잘 처리할 수 있게 해준다는 것을 보인다.", "note": "allow A to B: A가 B할 수 있게 하다. We show that ~가 이 논문의 핵심 실험 결과를 예고합니다."},
+        {"ko": "이 논문에서 우리는 정렬과 번역을 함께 학습하는 제안된 접근법이 기본 encoder-decoder 접근법보다 번역 성능을 상당히 향상시킨다는 것을 보인다.", "note": "jointly learning to ~: ~하는 것을 함께 학습하다. 논문 제목의 핵심 문구가 그대로 반복됩니다."},
+        {"ko": "이 향상은 문장이 길수록 더 뚜렷하게 나타나지만, 어떤 길이의 문장에서든 관찰될 수 있다.", "note": "more apparent with ~: ~에서 더 뚜렷하게 나타나다. but can be observed with ~가 효과의 일반성을 덧붙입니다."},
+        {"ko": "영어-프랑스어 번역 과제에서 제안된 접근법은 단일 모델로, 전통적인 구 기반 시스템에 필적하거나 근접하는 번역 성능을 달성한다.", "note": "comparable, or close, to ~: ~에 필적하거나 근접하는. with a single model이 앙상블 없이 이뤄냈다는 점을 강조합니다."},
+        {"ko": "더 나아가 정성적 분석은 제안된 모델이 원본 문장과 그에 대응하는 번역문 사이에서 언어학적으로 그럴듯한 (부드러운) 정렬을 찾아낸다는 것을 보여준다.", "note": "reveal that ~: ~임을 드러내다. qualitative analysis는 숫자가 아닌 사람의 눈으로 확인하는 분석을 뜻합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — 신경망 번역이라는 새 흐름",
+      "src": "p003",
+      "structure": [
+        "배경: 신경망 기계번역은 막 떠오르기 시작한 새로운 접근법이다",
+        "대비: 여러 작은 부품을 따로 조정하는 전통적 구 기반 방식과 다르다",
+        "신경망 방식의 정체: 문장을 읽고 번역을 내놓는 하나의 크고 단일한 신경망을 학습시키려 한다"
+      ],
+      "key_concepts": {
+        "machine translation": "한 언어의 문장을 다른 언어로 자동으로 옮기는 일. 이 논문이 실험 무대로 삼은 과제입니다.",
+        "phrase-based translation system": "문장을 여러 구(phrase) 단위로 쪼갠 뒤, 각 구에 대응하는 번역을 사전과 통계 모델로 찾아 이어붙이는 전통적 방식. 부품이 여러 개라 따로따로 튜닝해야 했습니다.",
+        "single, large neural network": "하나의 커다란 신경망. 여러 부품을 따로 만드는 대신, 입력 문장을 통째로 넣으면 번역이 통째로 나오는 하나의 시스템을 학습시킨다는 발상입니다.",
+        "end-to-end": "입력에서 출력까지 하나의 시스템으로 한 번에 처리하는 것. 이 문단에서 직접 쓰인 단어는 아니지만 신경망 번역이 지향하는 방향이 바로 이것입니다."
+      },
+      "summary": "신경망 기계번역은 Kalchbrenner와 Blunsom, Sutskever 등, Cho 등이 최근 제안한 막 떠오르는 접근법이다. 여러 작은 부품을 따로 조정해 쓰는 전통적인 구 기반 번역 시스템과 달리, 신경망 기계번역은 문장을 읽고 올바른 번역을 내놓는 하나의 크고 단일한 신경망을 짓고 학습시키려 한다.",
+      "sentences_ko": [
+        {"ko": "신경망 기계번역은 Kalchbrenner와 Blunsom(2013), Sutskever 등(2014), Cho 등(2014b)이 최근 제안한, 막 떠오르고 있는 기계번역 접근법이다.", "note": "recently proposed by ~가 approach를 꾸미는 과거분사구. 여러 선행 연구를 한꺼번에 인용하는 도입부 문형입니다."},
+        {"ko": "여러 작은 하위 구성 요소를 따로 조정해서 쓰는 전통적인 구 기반 번역 시스템과 달리, 신경망 기계번역은 문장을 읽고 올바른 번역을 내놓는 하나의 크고 단일한 신경망을 짓고 학습시키려 한다.", "note": "Unlike ~가 전통 방식과의 대비를 이끕니다. which consists of ~가 phrase-based system을 부연 설명합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — 고정 벡터의 한계",
+      "src": "p005",
+      "structure": [
+        "잠재적 문제 제기: encoder-decoder는 원문 전체를 고정 길이 벡터 하나에 압축해야 한다",
+        "그 결과: 학습 데이터보다 긴 문장을 신경망이 감당하기 어려워진다",
+        "실증적 근거: Cho 등의 연구가 입력이 길어질수록 성능이 급격히 나빠짐을 보였다"
+      ],
+      "key_concepts": {
+        "compress": "압축하다. 정보를 원래보다 작은 형태로 눌러 담는다는 뜻으로, 이 논문이 지적하는 근본 문제의 동작입니다.",
+        "training corpus": "학습에 쓰인 문장들의 모음. 모델은 이 안에서 본 길이의 문장에 대해서만 잘 작동하는 경향이 있습니다.",
+        "deteriorate rapidly": "빠르게 나빠지다. 성능이 완만하게 떨어지는 것이 아니라 급격히 무너진다는 뜻으로, 문제의 심각성을 강조합니다."
+      },
+      "summary": "이 encoder-decoder 접근법의 잠재적 문제는, 신경망이 원문의 모든 필요한 정보를 고정 길이 벡터 하나에 압축해 담을 수 있어야 한다는 점이다. 이는 신경망이 긴 문장을, 특히 학습 말뭉치의 문장보다 더 긴 문장을 처리하기 어렵게 만들 수 있다. Cho 등(2014b)은 실제로 기본 encoder-decoder의 성능이 입력 문장 길이가 늘어날수록 빠르게 나빠진다는 것을 보였다.",
+      "sentences_ko": [
+        {"ko": "이 encoder-decoder 접근법의 잠재적 문제는, 신경망이 원본 문장의 필요한 정보를 모두 고정 길이 벡터 하나에 압축할 수 있어야 한다는 것이다.", "note": "A potential issue with ~ is that ~: ~의 잠재적 문제는 ~라는 것이다. need to be able to ~가 요구되는 능력을 나타냅니다."},
+        {"ko": "이는 신경망이 긴 문장, 특히 학습 말뭉치에 있는 문장보다 더 긴 문장을 처리하기 어렵게 만들 수 있다.", "note": "may make it difficult for A to B: A가 B하기 어렵게 만들 수도 있다. especially those that ~가 가장 취약한 경우를 짚어줍니다."},
+        {"ko": "Cho 등(2014b)은 실제로 기본 encoder-decoder의 성능이 입력 문장의 길이가 늘어날수록 빠르게 나빠진다는 것을 보였다.", "note": "showed that ~: ~임을 보였다. indeed가 앞 문장의 우려를 실증적으로 확인해주는 역할을 합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro3",
+      "title": "1 Introduction — 정렬과 번역을 함께 학습하기",
+      "src": "p006",
+      "structure": [
+        "제안: encoder-decoder 모델의 확장판을 도입한다",
+        "핵심 동작: 번역 중 매 단어마다 원문에서 관련 정보가 몰려 있는 위치를 부드럽게 찾는다",
+        "그다음: 그 위치들의 문맥 벡터와 지금까지 만든 번역 단어들을 바탕으로 다음 단어를 예측한다"
+      ],
+      "key_concepts": {
+        "extension": "확장판. 기존 구조를 완전히 갈아엎는 게 아니라 그 위에 새 기능을 덧붙인다는 뜻입니다.",
+        "learns to align and translate jointly": "정렬과 번역을 함께 학습한다. 논문 제목 그대로이며, '어디를 볼지'와 '무엇을 쓸지'를 하나의 학습 과정으로 동시에 익힌다는 뜻입니다.",
+        "(soft-)search": "부드럽게 찾는다. 특정 위치 하나를 딱 고르는 것이 아니라, 여러 위치에 정도가 다른 가중치를 나눠 주는 방식을 뜻합니다. soft라는 말이 이후 이 논문 전체에서 반복됩니다.",
+        "context vectors": "문맥 벡터. 매 순간 원문의 어느 부분에 얼마나 집중했는지를 반영해 새로 만들어지는 벡터로, 기존의 고정 벡터 하나와 다릅니다."
+      },
+      "summary": "이 문제를 다루기 위해, 이 논문은 정렬과 번역을 함께 학습하는 encoder-decoder 모델의 확장판을 소개한다. 제안된 모델은 번역의 한 단어를 만들어낼 때마다, 가장 관련 있는 정보가 몰려 있는 원문의 위치들을 부드럽게 찾는다. 그런 다음 이 원문 위치들과 연관된 문맥 벡터들과, 지금까지 만들어낸 모든 이전 번역 단어들을 바탕으로 다음 목표 단어를 예측한다.",
+      "sentences_ko": [
+        {"ko": "이 문제를 다루기 위해, 우리는 정렬과 번역을 함께 학습하는 encoder-decoder 모델의 확장판을 소개한다.", "note": "In order to address ~: ~을 다루기 위해. an extension to ~는 '~에 대한 확장'입니다."},
+        {"ko": "제안된 모델은 번역의 한 단어를 만들어낼 때마다, 가장 관련 있는 정보가 몰려 있는 원문의 위치들의 집합을 부드럽게 찾는다.", "note": "Each time ~: ~할 때마다. (soft-)searches라는 표기가 이후 논문 전체에서 이 개념을 가리키는 고정 용어가 됩니다."},
+        {"ko": "그런 다음 모델은 이 원문 위치들과 연관된 문맥 벡터들, 그리고 지금까지 생성된 모든 목표 단어들을 바탕으로 목표 단어를 예측한다.", "note": "based on A and B: A와 B를 바탕으로. associated with ~가 context vectors를 꾸미는 과거분사구입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "background",
+      "title": "2.1 RNN Encoder–Decoder — 기존 방식의 구조",
+      "src": "p016",
+      "fix": {
+        "1": ["In the Encoder-Decoder framework, an encoder reads the input sentence, a sequence of vectors x = (x1, ..., xTx), into a vector c.", "The most common approach is to use an RNN such that c = q({h1, ..., hTx}), where ht is a hidden state at time t, and c is a vector generated from the sequence of the hidden states, and f and q are some nonlinear functions."]
+      },
+      "structure": [
+        "구조 설명: encoder가 입력 문장을 벡터들의 시퀀스로 읽어 벡터 c 하나로 만든다",
+        "가장 흔한 방법: RNN을 써서 hidden state들로부터 c를 생성한다",
+        "구체적 사례: Sutskever 등은 LSTM을 쓰고, c를 그냥 마지막 hidden state로 정했다"
+      ],
+      "key_concepts": {
+        "encoder": "입력 문장을 읽어 내부 표현으로 바꾸는 부품. 사람으로 치면 원문을 읽고 이해하는 역할입니다.",
+        "vector c": "encoder가 최종적으로 만들어내는 하나의 벡터. 이 논문이 지적하는 '고정 길이 벡터'가 바로 이것입니다.",
+        "hidden state h_t": "RNN이 매 시점 유지하는 내부 기억 벡터. 지금까지 읽은 내용을 압축해 담고 있습니다.",
+        "q, f (nonlinear functions)": "hidden state들을 최종 벡터 c로 합치는 함수(q)와, 각 시점의 hidden state를 계산하는 함수(f). 둘 다 신경망 내부의 계산 규칙입니다.",
+        "LSTM": "장기 의존성을 잘 기억하도록 게이트를 추가한 RNN의 한 종류. Sutskever 등의 이전 연구가 실제로 사용한 구조입니다.",
+        "last hidden state h_T": "마지막 시점의 hidden state. Sutskever 등의 방식에서는 이것 하나만을 뽑아 문장 전체를 대표하는 벡터 c로 삼습니다."
+      },
+      "summary": "encoder-decoder 틀에서 encoder는 벡터들의 시퀀스로 이루어진 입력 문장을 읽어 벡터 c 하나로 만든다. 가장 흔한 방법은 RNN을 써서, hidden state들의 시퀀스로부터 c를 생성하는 함수 q와 각 시점의 hidden state를 계산하는 함수 f를 두는 것이다. 예를 들어 Sutskever 등(2014)은 f로 LSTM을 쓰고, q는 그냥 마지막 hidden state를 그대로 c로 삼는 방식을 썼다.",
+      "sentences_ko": [
+        {"ko": "encoder-decoder 틀에서 encoder는 입력 문장, 즉 벡터들의 시퀀스 x = (x_1, ..., x_Tx)를 읽어 벡터 c로 만든다.", "note": "reads ~ into ~: ~를 읽어 ~로 만든다. 시퀀스를 벡터 하나로 응축하는 동작을 나타냅니다."},
+        {"ko": "가장 흔한 방법은 RNN을 사용해 c = q({h_1, ..., h_Tx})가 되게 하는 것인데, 여기서 h_t는 시점 t에서의 hidden state이고 c는 이 hidden state들의 시퀀스로부터 만들어지는 벡터다. f와 q는 어떤 비선형 함수들이다.", "note": "such that ~: ~가 되도록. 두 함수 f, q를 도입해 c가 만들어지는 절차를 수식으로 정의합니다."},
+        {"ko": "예를 들어 Sutskever 등(2014)은 f로 LSTM을 사용했고, q({h_1, ..., h_T}) = h_T로 두었다.", "note": "for instance가 구체적 선례를 듭니다. 마지막 hidden state 하나만 쓰는 가장 단순한 선택지를 보여줍니다."}
+      ]
+    },
+    {
+      "paragraph_id": "decoder-basic",
+      "title": "2 Background — decoder의 동작",
+      "src": ["p019", "p020"],
+      "drop": [1, 3],
+      "structure": [
+        "decoder의 학습 목표: 문맥 벡터 c와 이전에 예측한 단어들을 보고 다음 단어를 예측한다",
+        "수식으로 표현: 번역 전체의 확률을 순서가 있는 조건부 확률들의 곱으로 분해한다",
+        "RNN으로 구현: 각 조건부 확률을 비선형 함수 g와 RNN의 hidden state s_t로 모델링한다"
+      ],
+      "key_concepts": {
+        "decoder": "encoder가 만든 표현을 받아 실제 번역 문장을 한 단어씩 만들어내는 부품.",
+        "joint probability": "결합 확률. 번역 문장 전체가 나올 확률을 뜻하며, 이 논문에서는 단어별 확률의 곱으로 쪼개 계산합니다.",
+        "ordered conditionals": "순서가 있는 조건부 확률들. '앞 단어들이 주어졌을 때 다음 단어가 나올 확률'을 순서대로 곱해 문장 전체의 확률을 구합니다.",
+        "hidden state s_t": "decoder가 매 시점 유지하는 내부 상태. 지금까지 무엇을 번역했는지를 기억합니다.",
+        "nonlinear, multi-layered function g": "여러 층을 거칠 수도 있는 비선형 함수. 현재 상태에서 다음 단어가 무엇일 확률이 높은지를 계산해 냅니다."
+      },
+      "summary": "decoder는 흔히 문맥 벡터 c와 이전에 예측한 모든 단어들을 보고 다음 단어 y_t'를 예측하도록 학습된다. 달리 말해 decoder는 번역 y에 대한 확률을 순서가 있는 조건부 확률들로 분해해 정의한다. RNN을 쓰면 각 조건부 확률은 다음 단어의 확률을 내놓는 비선형 함수 g와, RNN의 hidden state인 s_t로 모델링된다.",
+      "sentences_ko": [
+        {"ko": "decoder는 흔히 문맥 벡터 c와 이전에 예측된 모든 단어들 {y_1, ..., y_t'-1}이 주어졌을 때 다음 단어 y_t'를 예측하도록 학습된다.", "note": "trained to ~: ~하도록 학습되다. given the context vector and ~가 예측의 조건을 명시합니다."},
+        {"ko": "달리 말해, decoder는 결합 확률을 순서가 있는 조건부 확률들로 분해함으로써 번역 y에 대한 확률을 정의한다.", "note": "In other words가 앞 문장을 수식적으로 다시 말합니다. decomposing ~은 분사구문으로 방법을 나타냅니다."},
+        {"ko": "RNN을 사용하면 각 조건부 확률은 다음과 같이 모델링되는데, 여기서 g는 비선형이며 여러 층으로 이루어질 수도 있는 함수로 y_t의 확률을 출력하고, s_t는 RNN의 hidden state다.", "note": "where 이하가 수식에 등장한 g와 s_t를 정의합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "new-decoder",
+      "title": "3.1 Decoder — 위치마다 다른 문맥 벡터",
+      "src": "p024",
+      "fix": {
+        "1": ["In a new model architecture, we define each conditional probability in Eq. (2) as p(yi | y1, ..., yi-1, x) = g(yi-1, si, ci), where si is an RNN hidden state for time i, computed by si = f(si-1, yi-1, ci).", "It should be noted that unlike the existing encoder-decoder approach (see Eq. (2)), here the probability is conditioned on a distinct context vector ci for each target word yi."]
+      },
+      "structure": [
+        "새 정의: 각 조건부 확률을 새로운 방식으로 정의한다",
+        "핵심 차이: 기존 방식과 달리 목표 단어마다 서로 다른 문맥 벡터 c_i에 조건이 걸린다"
+      ],
+      "key_concepts": {
+        "each conditional probability": "각 조건부 확률. 목표 문장의 각 단어가 나올 확률을 가리킵니다.",
+        "distinct context vector c_i for each target word": "목표 단어마다 서로 다른 문맥 벡터. 기존에는 c 하나를 모든 단어가 공유했는데, 이제는 단어 i를 만들 때마다 그 단어에 맞춘 새로운 c_i를 씁니다. 이것이 이 논문의 핵심 발명입니다.",
+        "hidden state s_i": "decoder가 시점 i에서 갖는 내부 상태로, 새로운 c_i를 반영해 계산됩니다."
+      },
+      "summary": "새 모델 구조에서는 식 (2)의 각 조건부 확률을 새롭게 정의하는데, 여기서 s_i는 시점 i에서의 RNN hidden state다. 기존 encoder-decoder 접근법과 달리, 여기서는 확률이 목표 단어 y_i마다 서로 다른 문맥 벡터 c_i에 조건이 걸린다는 점에 주목해야 한다.",
+      "sentences_ko": [
+        {"ko": "새로운 모델 구조에서 우리는 식 (2)의 각 조건부 확률을 다음과 같이 정의하는데, 여기서 s_i는 시점 i에서의 RNN hidden state다.", "note": "define A as B: A를 B로 정의하다. where 이하가 새로 등장한 기호 s_i를 설명합니다."},
+        {"ko": "기존의 encoder-decoder 접근법(식 (2) 참조)과 달리, 여기서는 확률이 각 목표 단어 y_i마다 별개의 문맥 벡터 c_i에 조건이 걸린다는 점에 주목해야 한다.", "note": "unlike ~가 대비를 이끕니다. conditioned on a distinct ~ for each ~가 이 논문의 핵심 차이를 정확히 짚습니다."}
+      ]
+    },
+    {
+      "paragraph_id": "annotations",
+      "title": "3.1 Decoder — annotation과 문맥 벡터",
+      "src": ["p025", "p026", "p027"],
+      "structure": [
+        "문맥 벡터의 재료: annotation들의 시퀀스에 의존한다",
+        "annotation의 성격: 입력 전체에 대한 정보를 담되, i번째 단어 주변에 특히 집중한다",
+        "계산 방법: 문맥 벡터는 이 annotation들의 가중합으로 계산된다",
+        "가중치의 정체: 정렬 모델이 위치 j의 입력과 위치 i의 출력이 얼마나 잘 맞는지 점수를 매긴다"
+      ],
+      "key_concepts": {
+        "annotation h_i": "encoder가 입력 문장의 각 위치마다 만들어내는 벡터. i번째 단어 주변에 강하게 초점을 두면서도 문장 전체의 정보를 담고 있습니다. 이 논문에서는 이 벡터가 여러 개 존재한다는 것이 핵심입니다.",
+        "weighted sum": "가중합. 여러 벡터에 각기 다른 가중치를 곱해 더한 것으로, 문맥 벡터 c_i를 만드는 방법입니다.",
+        "weight α_ij": "annotation h_j에 곱해지는 가중치. 출력 위치 i가 입력 위치 j를 얼마나 참고하는지를 나타냅니다. 이것이 바로 attention 가중치의 원형입니다.",
+        "alignment model a(s_{i-1}, h_j)": "정렬 모델. 이전 decoder 상태와 입력 위치 j의 annotation을 받아, 그 둘이 얼마나 잘 맞는지 점수를 매기는 작은 함수입니다."
+      },
+      "summary": "문맥 벡터 c_i는 encoder가 입력 문장을 매핑해 얻은 annotation들의 시퀀스 (h_1, ..., h_Tx)에 의존한다. 각 annotation h_i는 입력 시퀀스 전체에 대한 정보를 담고 있지만, 입력 시퀀스의 i번째 단어 주변 부분에 특히 강하게 초점을 둔다. 문맥 벡터는 이 annotation들의 가중합으로 계산되며, 각 annotation h_j의 가중치 α_ij는 위치 j 주변의 입력과 위치 i의 출력이 얼마나 잘 맞는지 점수를 매기는 정렬 모델로 계산된다.",
+      "sentences_ko": [
+        {"ko": "문맥 벡터 c_i는 encoder가 입력 문장을 매핑해 얻은 annotation들의 시퀀스 (h_1, ..., h_Tx)에 의존한다.", "note": "depend on ~: ~에 의존하다. to which ~가 encoder maps 이하를 받는 관계절입니다."},
+        {"ko": "각 annotation h_i는 입력 시퀀스 전체에 대한 정보를 담고 있지만, 입력 시퀀스의 i번째 단어를 둘러싼 부분에 강하게 초점을 둔다.", "note": "with a strong focus on ~: ~에 강하게 초점을 두면서. 전체를 보면서도 특정 지점에 집중한다는 이중적 성격을 설명합니다."},
+        {"ko": "annotation들이 어떻게 계산되는지는 다음 절에서 자세히 설명한다.", "note": "explain in detail: 자세히 설명하다. 뒤에 이어질 내용을 예고하는 문장입니다."},
+        {"ko": "문맥 벡터 c_i는 그런 다음 이 annotation h_i들의 가중합으로 계산된다.", "note": "is computed as ~: ~로 계산된다. then이 앞 절에서 정의한 annotation을 바탕으로 다음 단계로 넘어감을 표시합니다."},
+        {"ko": "각 annotation h_j의 가중치 α_ij는 e_ij로 계산되는데, a(s_{i-1}, h_j)는 위치 j 주변의 입력과 위치 i에서의 출력이 얼마나 잘 맞는지 점수를 매기는 정렬 모델이다.", "note": "an alignment model which scores how well ~가 a(·,·)의 역할을 정의합니다. how well A and B match가 '얼마나 잘 맞는지'라는 명사절입니다."},
+        {"ko": "이 점수는 (y_i를 내놓기 바로 직전의) RNN hidden state s_{i-1}과 입력 문장의 j번째 annotation h_j를 바탕으로 계산된다.", "note": "based on A and B: A와 B를 바탕으로. 괄호 안이 s_{i-1}이 정확히 어느 시점의 상태인지를 명시합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "expected-annotation",
+      "title": "3.1 Decoder — 기댓값으로서의 문맥 벡터",
+      "src": "p030",
+      "structure": [
+        "재해석: 가중합을 구하는 것은 곧 기대 annotation을 계산하는 것으로 볼 수 있다",
+        "그 기댓값의 대상: 가능한 정렬들에 대한 기댓값이다",
+        "확률적 해석: α_ij를 목표 단어 y_i가 원문 단어 x_j에서 번역됐을 확률로 본다",
+        "결론: 문맥 벡터 c_i는 이 확률들로 가중한 annotation들의 기댓값이다"
+      ],
+      "key_concepts": {
+        "expected annotation": "기대 annotation. 여러 annotation을 확률적으로 섞어 평균 낸 것으로, 통계학의 기댓값 개념을 빌려 온 것입니다.",
+        "expectation over possible alignments": "가능한 정렬들에 대한 기댓값. 목표 단어가 원문의 어느 단어와 대응하는지가 확실하지 않으므로, 여러 가능성을 확률로 섞어 계산합니다.",
+        "aligned to, or translated from": "정렬된, 또는 그로부터 번역된. 목표 단어와 원문 단어 사이의 대응 관계를 나타내는 표현입니다.",
+        "probability α_ij": "목표 단어 y_i가 원문 단어 x_j와 대응할 확률. 이 값이 크면 클수록 그 단어 쌍이 서로 관련이 깊다는 뜻입니다."
+      },
+      "summary": "모든 annotation의 가중합을 구하는 이 방식은, 가능한 정렬들에 대한 기댓값으로서 기대 annotation을 계산하는 것으로 이해할 수 있다. α_ij를 목표 단어 y_i가 원문 단어 x_j에 정렬된, 또는 그로부터 번역된 확률이라 하면, i번째 문맥 벡터 c_i는 확률 α_ij로 가중된 모든 annotation에 대한 기대 annotation이 된다.",
+      "sentences_ko": [
+        {"ko": "우리는 모든 annotation의 가중합을 구하는 이 접근법을, 가능한 정렬들에 대한 기댓값으로서 기대 annotation을 계산하는 것으로 이해할 수 있다.", "note": "understand A as -ing: A를 ~하는 것으로 이해하다. 수식적 절차에 직관적 해석을 붙이는 문장입니다."},
+        {"ko": "α_ij를 목표 단어 y_i가 원문 단어 x_j에 정렬된, 즉 그로부터 번역된 확률이라고 하자.", "note": "Let A be B: A를 B라 하자. or가 aligned to와 translated from을 같은 뜻으로 이어줍니다."},
+        {"ko": "그러면 i번째 문맥 벡터 c_i는 확률 α_ij로 가중된, 모든 annotation에 대한 기대 annotation이 된다.", "note": "the expected annotation over ~: ~에 대한 기대 annotation. 앞서 정의한 가중합 수식을 확률론의 언어로 다시 요약합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "7 Conclusion — 결론",
+      "src": ["p093", "p094"],
+      "structure": [
+        "기존 방식 재확인: encoder-decoder는 입력 문장 전체를 고정 길이 벡터 하나로 인코딩한다",
+        "문제 제기의 근거: 선행 실증 연구에 따라 고정 문맥 벡터가 긴 문장에서 문제가 된다고 추정했다",
+        "제안 요약: 이 문제를 다루는 새 구조를 제안했다",
+        "핵심 확장: decoder가 매 목표 단어를 만들 때마다 입력 단어 집합을 부드럽게 검색하게 했다",
+        "효과 1: 문장 전체를 고정 벡터 하나로 인코딩할 필요에서 벗어난다",
+        "효과 2: 모델이 다음 단어 생성에 관련된 정보에만 집중할 수 있게 된다",
+        "실용적 영향: 긴 문장에서 좋은 결과를 내는 능력이 크게 좋아진다",
+        "훈련 방식의 특징: 정렬 메커니즘을 포함한 모든 구성 요소가 하나의 목표를 향해 함께 학습된다"
+      ],
+      "key_concepts": {
+        "conventional approach": "기존의 관행적 방식. 여기서는 앞서 설명한 기본 encoder-decoder를 가리킵니다.",
+        "conjecture": "추측하다. 확정된 사실이 아니라 근거를 바탕으로 한 가설임을 밝히는 신중한 표현입니다.",
+        "empirical study": "실증 연구. 이론이 아니라 실제 실험 결과에 기반한 연구를 뜻합니다.",
+        "jointly trained": "함께 학습된다. 정렬을 찾는 부분과 번역을 만드는 부분이 따로가 아니라 하나의 학습 과정으로 동시에 최적화된다는 뜻입니다.",
+        "log-probability": "로그 확률. 정답 번역이 나올 확률에 로그를 취한 값으로, 신경망 번역 모델이 학습 중 최대화하려는 목표입니다."
+      },
+      "summary": "encoder-decoder라 불리는 기존의 신경망 기계번역 접근법은 입력 문장 전체를 고정 길이 벡터 하나로 인코딩한 뒤 그로부터 번역을 만들어낸다. 저자들은 Cho 등과 Pouget-Abadie 등이 보고한 최근의 실증 연구를 바탕으로, 고정 길이 문맥 벡터를 쓰는 것이 긴 문장을 번역하는 데 문제가 된다고 추정했다. 이 논문은 이 문제를 다루는 새로운 구조를 제안했다. 모델이 각 목표 단어를 생성할 때마다 입력 단어 집합, 또는 encoder가 계산한 그 annotation들을 부드럽게 검색하게 함으로써 기본 encoder-decoder를 확장한 것이다. 이는 모델을 문장 전체를 고정 길이 벡터 하나로 인코딩해야 하는 부담에서 풀어주고, 다음 목표 단어 생성에 관련된 정보에만 집중할 수 있게 해준다. 이것이 긴 문장에서 좋은 결과를 내는 신경망 기계번역 시스템의 능력에 큰 긍정적 영향을 준다. 전통적인 기계번역 시스템과 달리, 정렬 메커니즘을 포함한 번역 시스템의 모든 부분이 올바른 번역을 만들어낼 로그 확률을 더 높이는 하나의 목표를 향해 함께 학습된다.",
+      "sentences_ko": [
+        {"ko": "encoder-decoder 접근법이라 불리는 기존의 신경망 기계번역 방식은, 입력 문장 전체를 고정 길이 벡터 하나로 인코딩한 뒤 그로부터 번역이 디코딩된다.", "note": "called ~가 approach를 꾸미는 과거분사구. from which ~가 그 벡터의 용도를 설명합니다."},
+        {"ko": "우리는 Cho 등(2014b)과 Pouget-Abadie 등(2014)이 보고한 최근의 실증 연구를 근거로, 고정 길이 문맥 벡터를 사용하는 것이 긴 문장을 번역하는 데 문제가 된다고 추측했다.", "note": "We conjectured that ~: 우리는 ~라고 추측했다. based on ~이 그 추측의 근거를 명시합니다."},
+        {"ko": "이 논문에서 우리는 이 문제를 다루는 새로운 구조를 제안했다.", "note": "결론부에서 본문의 기여를 다시 짧게 요약하는 표준 문장입니다."},
+        {"ko": "우리는 모델이 각 목표 단어를 생성할 때마다 입력 단어들의 집합, 즉 encoder가 계산한 그 annotation들을 부드럽게 검색하게 함으로써 기본 encoder-decoder를 확장했다.", "note": "by letting a model ~: 모델이 ~하게 함으로써. or their annotations computed by an encoder가 input words를 다르게 표현한 동격구입니다."},
+        {"ko": "이는 모델을 원문 전체를 고정 길이 벡터 하나로 인코딩해야 하는 부담에서 풀어주며, 다음 목표 단어 생성과 관련된 정보에만 집중할 수 있게 해준다.", "note": "frees A from -ing와 lets A -ing가 and로 병렬 연결되어 두 가지 효과를 나열합니다."},
+        {"ko": "이는 긴 문장에서 좋은 결과를 낼 수 있는 신경망 기계번역 시스템의 능력에 큰 긍정적 영향을 준다.", "note": "have a major positive impact on ~: ~에 큰 긍정적 영향을 주다. 결론에서 실용적 성과를 강조하는 문장입니다."},
+        {"ko": "전통적인 기계번역 시스템과 달리, 정렬 메커니즘을 포함한 번역 시스템의 모든 부분은 올바른 번역을 만들어낼 로그 확률을 더 높이는 방향으로 함께 학습된다.", "note": "Unlike with ~가 대비를 이끕니다. towards a better log-probability of ~가 학습의 목표를 명시합니다."}
+      ]
+    }
+  ]
+}

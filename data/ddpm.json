@@ -1,0 +1,277 @@
+{
+  "id": "ddpm",
+  "order": 14,
+  "short": "Diffusion (DDPM)",
+  "title": "Denoising Diffusion Probabilistic Models",
+  "authors": "Jonathan Ho, Ajay Jain, Pieter Abbeel",
+  "year": 2020,
+  "venue": "NeurIPS 2020",
+  "arxiv": "2006.11239",
+  "url": "https://arxiv.org/abs/2006.11239",
+  "category": "Generative Model",
+  "category_ko": "확산 기반 생성 모델",
+  "why_must_read": "Stable Diffusion, DALL-E, Sora까지 지금 이미지·영상 생성의 주류가 된 diffusion 모델을 실제로 쓸 만하게 만든 논문입니다. GAN이 '경쟁시켜서' 이미지를 만든다면, 이 논문은 '깨끗한 사진에 잡음을 계속 더해 완전한 잡음으로 만든 뒤, 그 과정을 거꾸로 되짚는 법을 배우자'는 전혀 다른 발상으로 접근합니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": "p001",
+      "fix": {
+        "1": "We present high quality image synthesis results using diffusion probabilistic models, a class of latent variable models inspired by considerations from nonequilibrium thermodynamics."
+      },
+      "structure": [
+        "제시: diffusion probabilistic model을 써서 고품질 이미지 생성 결과를 낸다",
+        "모델의 뿌리: 비평형 열역학에서 영감을 받은 잠재 변수 모델의 한 부류다",
+        "핵심 기법: score matching과의 새로운 연결고리를 근거로 삼은 가중 변분 하한으로 학습한다",
+        "부가 특성: 점진적인 손실 압축 해제 방식으로도 해석할 수 있으며, 이는 자기회귀 디코딩의 일반화로 볼 수 있다",
+        "성과 1: CIFAR10에서 Inception score 9.46, 당시 최고 기록인 FID 3.17을 달성했다",
+        "성과 2: 256×256 LSUN에서는 ProgressiveGAN과 비슷한 수준의 표본 품질을 얻었다"
+      ],
+      "key_concepts": {
+        "diffusion probabilistic model": "확산 확률 모델. 데이터에 잡음을 점점 더해 완전한 잡음으로 만드는 과정을 정의한 뒤, 그 반대 과정(잡음 제거)을 학습하는 생성 모델입니다.",
+        "latent variable model": "잠재 변수 모델. 관측되지 않는 숨은 변수를 두고, 그 변수를 거쳐 실제 데이터가 만들어진다고 가정하는 모델입니다.",
+        "nonequilibrium thermodynamics": "비평형 열역학. 물리학에서 입자가 무질서로 흩어지는 과정을 다루는 이론으로, 이 모델의 수학적 영감이 된 분야입니다.",
+        "variational bound": "변분 하한. 직접 계산하기 어려운 확률을 근사로 최적화하기 위해 대신 최적화하는 하한선입니다.",
+        "denoising score matching": "잡음 제거 점수 매칭. 잡음이 낀 데이터에서 원래 데이터로 되돌아가는 방향(점수)을 맞히도록 학습하는 기존의 다른 생성 모델링 기법입니다. 이 논문은 diffusion model이 이것과 수학적으로 연결된다는 것을 보입니다.",
+        "Langevin dynamics": "랑주뱅 동역학. 무작위성과 방향성 있는 힘을 함께 써서 확률분포에서 표본을 뽑아내는 물리학 기반의 표본추출 기법입니다.",
+        "progressive lossy decompression": "점진적 손실 압축 해제. 압축된 정보를 조금씩 풀어내며 이미지를 복원하는 과정으로, diffusion model의 표본 생성 과정이 이와 비슷하게 해석될 수 있습니다.",
+        "Inception score / FID": "생성된 이미지의 품질과 다양성을 수치로 재는 두 가지 표준 지표. FID는 낮을수록, Inception score는 높을수록 좋습니다.",
+        "ProgressiveGAN": "고해상도 이미지를 점진적으로 키워가며 생성하던 당시의 대표적인 GAN 모델. 비교 기준으로 인용됩니다."
+      },
+      "summary": "이 논문은 비평형 열역학에서 영감을 받은 잠재 변수 모델의 한 부류인 diffusion probabilistic model을 써서 고품질 이미지 생성 결과를 제시한다. 가장 좋은 결과는 diffusion probabilistic model과, Langevin dynamics를 쓰는 denoising score matching 사이의 새로운 연결고리에 따라 설계한 가중 변분 하한으로 학습했을 때 나왔으며, 이 모델은 자기회귀 디코딩의 일반화로도 해석할 수 있는 점진적 손실 압축 해제 방식을 자연스럽게 갖는다. 조건 없는 CIFAR10 데이터셋에서 Inception score 9.46과 당시 최고 기록인 FID 3.17을 얻었고, 256×256 LSUN에서는 ProgressiveGAN과 비슷한 수준의 표본 품질을 얻었다.",
+      "sentences_ko": [
+        {"ko": "우리는 비평형 열역학의 고려 사항에서 영감을 받은 잠재 변수 모델의 한 부류인 diffusion probabilistic model을 사용해, 고품질 이미지 생성 결과를 제시한다.", "note": "inspired by ~가 models를 꾸미는 과거분사구. 물리학 이론에서 빌려온 아이디어임을 처음부터 밝힙니다."},
+        {"ko": "우리의 가장 좋은 결과는, diffusion probabilistic model과 Langevin dynamics를 쓰는 denoising score matching 사이의 새로운 연결고리에 따라 설계한 가중 변분 하한으로 학습했을 때 얻어졌으며, 우리 모델은 자기회귀 디코딩의 일반화로 해석될 수 있는 점진적 손실 압축 해제 방식을 자연스럽게 갖는다.", "note": "designed according to ~가 bound를 꾸밉니다. can be interpreted as ~가 부가적인 이론적 해석을 덧붙입니다."},
+        {"ko": "조건 없는 CIFAR10 데이터셋에서 우리는 Inception score 9.46과 당시 최고 기록인 FID 점수 3.17을 얻었다.", "note": "unconditional: 조건 없는. 특정 클래스를 지정하지 않고 자유롭게 이미지를 생성했다는 뜻입니다."},
+        {"ko": "256×256 LSUN에서는 ProgressiveGAN과 비슷한 표본 품질을 얻었다.", "note": "similar to ~: ~와 비슷한. 당시 GAN 최고 성능과 견줄 만하다는 주장입니다."},
+        {"ko": "우리의 구현은 https://github.com/hojonathanho/diffusion 에서 이용할 수 있다.", "note": "논문 마지막에 코드 공개 링크를 밝히는 관례적 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — 생성 모델의 각축장",
+      "src": "p003",
+      "structure": [
+        "현황: 온갖 종류의 깊은 생성 모델이 최근 다양한 데이터 형태에서 고품질 표본을 만들어냈다",
+        "구체적 계보: GAN, 자기회귀 모델, flow, VAE가 인상적인 이미지·오디오 표본을 합성해왔다",
+        "새로운 흐름: 에너지 기반 모델링과 score matching에서도 GAN에 필적하는 이미지를 만드는 놀라운 발전이 있었다"
+      ],
+      "key_concepts": {
+        "deep generative models": "깊은 생성 모델. 신경망을 써서 새로운 데이터(이미지, 오디오 등)를 만들어내는 모델 전체를 아우르는 말입니다.",
+        "data modalities": "데이터 형태. 이미지, 오디오, 텍스트처럼 서로 다른 종류의 데이터를 가리킵니다.",
+        "autoregressive models": "자기회귀 모델. 앞서 생성한 것을 보고 다음을 순서대로 만들어내는 생성 모델. GPT 계열이 텍스트에서 쓰는 방식을 이미지 픽셀에 적용한 것도 있습니다.",
+        "flows (normalizing flows)": "정규화 흐름. 간단한 분포를 가역적인 변환들을 여러 번 거쳐 복잡한 데이터 분포로 바꾸는 생성 모델입니다.",
+        "variational autoencoders (VAEs)": "변분 오토인코더. 데이터를 잠재 벡터로 압축했다가 다시 복원하는 구조를 확률적으로 학습하는 생성 모델입니다.",
+        "energy-based modeling": "에너지 기반 모델링. 데이터에 낮은 '에너지' 점수를, 데이터가 아닌 것에는 높은 점수를 매기도록 학습해 간접적으로 확률분포를 표현하는 방식입니다.",
+        "score matching": "점수 매칭. 확률분포 자체가 아니라 그 분포의 기울기(점수)를 맞히도록 학습하는 기법으로, diffusion model과 깊이 연결됩니다."
+      },
+      "summary": "온갖 종류의 깊은 생성 모델이 최근 아주 다양한 데이터 형태에서 고품질 표본을 만들어내는 성과를 보였다. GAN, 자기회귀 모델, flow, 변분 오토인코더는 인상적인 이미지와 오디오 표본을 합성해왔고, 에너지 기반 모델링과 score matching에서도 GAN에 필적하는 이미지를 만들어내는 놀라운 발전이 있었다.",
+      "sentences_ko": [
+        {"ko": "온갖 종류의 깊은 생성 모델이 최근 아주 다양한 데이터 형태에서 고품질 표본을 보여주었다.", "note": "of all kinds: 온갖 종류의. exhibited가 눈으로 확인할 수 있는 성과를 나타냅니다."},
+        {"ko": "적대적 생성 신경망(GAN), 자기회귀 모델, flow, 변분 오토인코더(VAE)는 인상적인 이미지와 오디오 표본을 합성해 왔고, 에너지 기반 모델링과 score matching에서도 GAN에 필적하는 이미지를 만들어내는 놀라운 발전이 있었다.", "note": "have synthesized와 there have been ~이 and로 병렬 연결됩니다. comparable to those of GANs가 성과의 수준을 GAN에 견줍니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — diffusion model의 정체",
+      "src": "p009",
+      "structure": [
+        "선언: 이 논문은 diffusion probabilistic model 연구의 진전을 제시한다",
+        "정의: diffusion model은 변분 추론으로 학습되어 유한한 시간 뒤 데이터와 비슷한 표본을 만들어내는 파라미터화된 마르코프 연쇄다",
+        "학습 대상: 이 연쇄의 전이는 diffusion 과정을 거꾸로 되돌리도록 학습된다",
+        "diffusion 과정의 정체: 표본 생성과 반대 방향으로 데이터에 점점 잡음을 더해, 결국 신호를 완전히 파괴하는 마르코프 연쇄다",
+        "단순화: 잡음이 작은 가우시안 잡음이면, 표본 생성 연쇄의 전이도 조건부 가우시안으로 두는 것으로 충분하다",
+        "그 이점: 신경망을 아주 단순하게 파라미터화할 수 있다"
+      ],
+      "key_concepts": {
+        "parameterized Markov chain": "파라미터화된 마르코프 연쇄. 각 단계가 오직 바로 앞 단계에만 의존하는 확률 과정으로, 그 전이 규칙이 학습 가능한 파라미터로 이루어져 있습니다.",
+        "variational inference": "변분 추론. 직접 계산하기 어려운 확률분포를 다루기 쉬운 근사 분포로 바꿔 최적화하는 기법입니다.",
+        "reverse a diffusion process": "diffusion 과정을 거꾸로 되돌리다. 잡음을 더하는 과정의 반대, 즉 잡음을 제거하는 과정을 학습한다는 뜻이며 이 모델의 핵심 발상입니다.",
+        "gradually adds noise to the data": "데이터에 점점 잡음을 더하다. 원본 이미지를 시작으로 아주 조금씩 무작위 잡음을 섞어가는 과정입니다.",
+        "until signal is destroyed": "신호가 완전히 파괴될 때까지. 이 과정을 충분히 반복하면 원본 이미지는 완전한 무작위 잡음이 됩니다.",
+        "Gaussian noise": "가우시안 잡음. 정규분포를 따르는 무작위 잡음으로, 다루기 쉽고 수학적으로 깔끔합니다.",
+        "conditional Gaussians": "조건부 가우시안. 이전 단계가 주어졌을 때 다음 단계가 정규분포를 따른다고 가정하는 것으로, 신경망 설계를 단순하게 만들어줍니다."
+      },
+      "summary": "이 논문은 diffusion probabilistic model 연구의 진전을 제시한다. diffusion model은, 줄여서 diffusion model이라 부르는데, 변분 추론으로 학습되어 유한한 시간이 지난 뒤 데이터와 비슷한 표본을 만들어내는 파라미터화된 마르코프 연쇄다. 이 연쇄의 전이는 diffusion 과정을 거꾸로 되돌리도록 학습되며, diffusion 과정이란 표본 생성과 반대 방향으로 데이터에 점점 잡음을 더해 결국 신호를 완전히 파괴하는 마르코프 연쇄다. diffusion이 적은 양의 가우시안 잡음으로 이루어져 있을 때는, 표본 생성 연쇄의 전이도 조건부 가우시안으로 두는 것으로 충분하며, 이는 특히 단순한 신경망 파라미터화를 가능하게 한다.",
+      "sentences_ko": [
+        {"ko": "이 논문은 diffusion probabilistic model 연구의 진전을 제시한다.", "note": "present progress in ~: ~에서의 진전을 제시하다. 이 논문의 위치를 한 문장으로 밝힙니다."},
+        {"ko": "diffusion probabilistic model은(간단히 \"diffusion model\"이라 부르겠다) 변분 추론으로 학습되어, 유한한 시간이 지난 뒤 데이터와 비슷한 표본을 만들어내는 파라미터화된 마르코프 연쇄다.", "note": "which we will call ~가 삽입되어 앞으로 쓸 줄임말을 미리 정의합니다. trained using ~이 학습 방법을 명시합니다."},
+        {"ko": "이 연쇄의 전이는 diffusion 과정을 거꾸로 되돌리도록 학습되는데, diffusion 과정이란 표본 생성과 반대 방향으로 데이터에 점점 잡음을 더해 신호가 파괴될 때까지 계속되는 마르코프 연쇄다.", "note": "are learned to ~: ~하도록 학습된다. which is a Markov chain ~이 diffusion process를 정의하는 관계절입니다."},
+        {"ko": "diffusion이 적은 양의 가우시안 잡음으로 이루어져 있을 때는, 표본 생성 연쇄의 전이 역시 조건부 가우시안으로 두는 것으로 충분하며, 이는 특히 단순한 신경망 파라미터화를 가능하게 해준다.", "note": "it is sufficient to ~: ~하는 것으로 충분하다. allowing for ~가 결과로 얻는 실용적 이점을 덧붙입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "contribution",
+      "title": "1 Introduction — 이 논문의 기여",
+      "src": "p010",
+      "structure": [
+        "선행 평가: diffusion model은 정의하기 쉽고 학습도 효율적이지만, 저자들이 알기로 고품질 표본 생성이 가능하다는 것을 보인 적은 없었다",
+        "핵심 주장: 실제로 diffusion model이 고품질 표본을 만들 수 있음을 보이며, 때로는 다른 생성 모델의 발표된 결과보다 낫다",
+        "부가 발견: 특정한 파라미터화 방식을 쓰면 여러 잡음 수준에 걸친 denoising score matching, 그리고 표본 생성 시의 annealed Langevin dynamics와 동치 관계가 드러난다",
+        "실용적 함의: 가장 좋은 표본 품질도 바로 이 파라미터화로 얻었기에, 이 동치 관계를 이 논문의 주요 기여 중 하나로 꼽는다"
+      ],
+      "key_concepts": {
+        "straightforward to define": "정의하기 간단하다는 것. 모델의 수학적 얼개 자체는 복잡하지 않다는 뜻입니다.",
+        "to the best of our knowledge": "저자들이 아는 한. 학술 논문에서 선행 연구의 한계를 조심스럽게 지적할 때 쓰는 표현입니다.",
+        "equivalence": "동치 관계. 서로 다르게 보이는 두 접근법이 수학적으로 같다는 것을 보이는 것으로, 이 논문의 이론적 핵심 기여입니다.",
+        "multiple noise levels": "여러 잡음 수준. diffusion 과정의 각 단계마다 잡음의 정도가 다르다는 점을 가리킵니다.",
+        "annealed Langevin dynamics": "담금질된 랑주뱅 동역학. 잡음 크기를 점점 줄여가며 표본을 뽑는 기법으로, diffusion model의 표본 생성 절차와 수학적으로 연결됩니다.",
+        "primary contribution": "주요 기여. 논문이 학계에 제공하는 핵심적인 새 지식을 뜻합니다."
+      },
+      "summary": "diffusion model은 정의하기 간단하고 학습도 효율적이지만, 저자들이 아는 한 고품질 표본을 만들어낼 수 있다는 것을 보인 적은 없었다. 이 논문은 diffusion model이 실제로 고품질 표본을 만들어낼 수 있으며, 때로는 다른 종류의 생성 모델에 대해 발표된 결과보다 낫다는 것을 보인다. 나아가 diffusion model의 특정한 파라미터화가, 학습 중 여러 잡음 수준에 걸친 denoising score matching, 그리고 표본 생성 중의 annealed Langevin dynamics와 동치 관계에 있다는 것을 드러낸다. 가장 좋은 표본 품질 결과도 바로 이 파라미터화로 얻었기에, 저자들은 이 동치 관계를 이 논문의 주요 기여 중 하나로 꼽는다.",
+      "sentences_ko": [
+        {"ko": "diffusion model은 정의하기 간단하고 학습도 효율적이지만, 우리가 아는 한 고품질 표본을 만들어낼 수 있다는 것이 입증된 적은 없다.", "note": "to the best of our knowledge: 우리가 아는 한. 신중하게 선행 연구의 공백을 지적하는 표현입니다."},
+        {"ko": "우리는 diffusion model이 실제로 고품질 표본을 만들어낼 수 있으며, 때로는 다른 종류의 생성 모델에 대해 발표된 결과보다 낫다는 것을 보인다.", "note": "actually가 앞 문장의 회의를 뒤집는 확신을 강조합니다."},
+        {"ko": "더 나아가 우리는 diffusion model의 특정한 파라미터화가, 학습 중 여러 잡음 수준에 걸친 denoising score matching, 그리고 표본 생성 중의 annealed Langevin dynamics와의 동치 관계를 드러낸다는 것을 보인다.", "note": "reveal an equivalence with A and with B: A와 B 둘 다와의 동치 관계를 드러낸다."},
+        {"ko": "우리는 이 파라미터화를 사용해 가장 좋은 표본 품질 결과를 얻었으므로, 이 동치 관계를 우리의 주요 기여 중 하나로 꼽는다.", "note": "consider A to be B: A를 B로 여기다. so가 결과에서 평가로 이어지는 인과관계를 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "limitation",
+      "title": "1 Introduction — 한 가지 한계",
+      "src": "p011",
+      "fix": {
+        "1": "Despite their sample quality, our models do not have competitive log likelihoods compared to other likelihood-based models."
+      },
+      "structure": [
+        "정직한 한계 인정: 표본 품질은 좋지만 다른 우도 기반 모델에 비해 로그 우도 경쟁력은 없다",
+        "부가 발견: 손실 없는 부호 길이의 대부분이 눈에 잘 띄지 않는 이미지 디테일을 표현하는 데 쓰인다",
+        "재해석: 이 현상을 손실 압축의 언어로 더 정교하게 분석한다",
+        "핵심 통찰: diffusion model의 표본 생성 절차는 일종의 점진적 디코딩이며, 일반적인 자기회귀 모델보다 훨씬 폭넓게 일반화된 비트 순서를 따르는 자기회귀 디코딩과 닮았다"
+      ],
+      "key_concepts": {
+        "competitive log likelihoods": "경쟁력 있는 로그 우도. 모델이 실제 데이터가 나올 확률을 얼마나 잘 설명하는지를 재는 지표로, 이 논문의 모델은 이 지표에서는 최고가 아닙니다.",
+        "lossless codelengths": "손실 없는 부호 길이. 정보이론의 관점에서 이미지를 완벽하게 표현하는 데 필요한 정보량을 뜻합니다.",
+        "imperceptible image details": "눈에 잘 띄지 않는 이미지 디테일. 사람 눈에는 거의 안 보이지만 정보량 계산에는 큰 비중을 차지하는 미세한 부분입니다.",
+        "lossy compression": "손실 압축. 정보를 일부 버리면서 크기를 줄이는 압축 방식으로, JPEG 같은 이미지 포맷이 여기에 해당합니다.",
+        "progressive decoding": "점진적 디코딩. 압축된 정보를 한 번에 다 풀지 않고 단계적으로 풀어나가는 방식입니다.",
+        "bit ordering": "비트 순서. 정보를 어떤 순서로 하나씩 복원해 나갈지 정하는 규칙입니다."
+      },
+      "summary": "표본 품질은 좋지만, 저자들의 모델은 다른 우도 기반 모델에 비해 경쟁력 있는 로그 우도를 갖지는 못한다. 저자들은 모델의 손실 없는 부호 길이 대부분이 눈에 잘 띄지 않는 이미지 디테일을 표현하는 데 쓰인다는 것을 발견한다. 이 현상을 손실 압축의 언어로 더 정교하게 분석하며, diffusion model의 표본 생성 절차가 일종의 점진적 디코딩으로서, 일반적인 자기회귀 모델로는 불가능할 만큼 훨씬 폭넓게 일반화된 비트 순서를 따르는 자기회귀 디코딩과 닮았다는 것을 보인다.",
+      "sentences_ko": [
+        {"ko": "표본 품질에도 불구하고, 우리 모델은 다른 우도 기반 모델들에 비해 경쟁력 있는 로그 우도를 갖지는 못한다.", "note": "Despite ~가 양보절을 이끕니다. 성과를 자랑한 뒤 한계를 정직하게 밝히는 문장입니다."},
+        {"ko": "우리는 우리 모델의 손실 없는 부호 길이 대부분이 눈에 잘 띄지 않는 이미지 디테일을 표현하는 데 쓰인다는 것을 발견한다.", "note": "the majority of ~: ~의 대부분. consumed to ~가 그 정보량이 소비되는 용도를 밝힙니다."},
+        {"ko": "우리는 이 현상을 손실 압축의 언어로 더 정교하게 분석하며, diffusion model의 표본 생성 절차가 일종의 점진적 디코딩으로서, 일반적인 자기회귀 모델로는 보통 불가능한 수준까지 폭넓게 일반화된 비트 순서를 따르는 자기회귀 디코딩과 닮았다는 것을 보인다.", "note": "resembles ~ that vastly generalizes ~: ~를 훨씬 폭넓게 일반화한 것과 닮았다. 이론적 재해석을 통해 이 모델의 정체를 다시 규정합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "reverse-process",
+      "title": "2 Background — 역방향 과정",
+      "src": "p013",
+      "structure": [
+        "정의: diffusion model은 pθ(x0) 형태의 잠재 변수 모델이다",
+        "잠재 변수의 정체: x1부터 xT까지는 실제 데이터 x0와 같은 차원의 잠재 변수들이다",
+        "결합 분포에 이름 붙이기: pθ(x0:T)를 역방향 과정이라 부른다",
+        "역방향 과정의 정의: 순수한 잡음 p(xT) = N(xT; 0, I)에서 시작해, 학습된 가우시안 전이들로 이루어진 마르코프 연쇄로 정의된다"
+      ],
+      "key_concepts": {
+        "latent variable model of the form pθ(x0)": "실제 관측하는 데이터 x0의 확률을, 눈에 보이지 않는 잠재 변수들을 거쳐 표현하는 모델의 형식입니다.",
+        "latents x1, ..., xT": "잠재 변수들의 연쇄. 이 논문에서는 원본 이미지 x0에 잡음이 점점 더 섞여가는 중간 단계들을 나타냅니다.",
+        "reverse process": "역방향 과정. 순수한 잡음에서 시작해 한 단계씩 잡음을 걷어내며 최종적으로 실제 같은 이미지 x0를 만들어내는 과정입니다. 신경망이 학습하는 대상이 바로 이것입니다.",
+        "p(xT) = N(xT; 0, I)": "가장 마지막 잠재 변수 xT가 평균 0, 분산 1인 표준 정규분포를 따른다는 뜻. 즉 완전한 무작위 잡음에서 생성이 시작됩니다.",
+        "learned Gaussian transitions": "학습된 가우시안 전이. 한 단계에서 다음 단계로 넘어가는 규칙 자체가 신경망으로 학습되는, 정규분포 형태의 확률적 변환입니다."
+      },
+      "summary": "diffusion model은 pθ(x0) 형태의 잠재 변수 모델이며, 여기서 x1부터 xT까지는 실제 데이터 x0와 같은 차원을 가진 잠재 변수들이다. 결합 분포 pθ(x0:T)는 역방향 과정이라 불리며, 순수한 잡음인 p(xT) = N(xT; 0, I)에서 출발해 학습된 가우시안 전이들로 이루어진 마르코프 연쇄로 정의된다.",
+      "sentences_ko": [
+        {"ko": "diffusion model은 pθ(x0) := ∫pθ(x0:T) dx1:T 형태의 잠재 변수 모델이며, 여기서 x1, ..., xT는 실제 데이터 x0 ~ q(x0)와 같은 차원을 가진 잠재 변수들이다.", "note": "of the form ~: ~라는 형식의. where 이하가 수식에 등장한 잠재 변수들을 정의합니다."},
+        {"ko": "결합 분포 pθ(x0:T)는 역방향 과정이라 불리며, p(xT) = N(xT; 0, I)에서 출발하는, 학습된 가우시안 전이들로 이루어진 마르코프 연쇄로 정의된다.", "note": "is called ~ and it is defined as ~: ~라 불리며 ~로 정의된다. starting at ~이 이 연쇄의 출발점을 명시합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "forward-process",
+      "title": "2 Background — 순방향 과정",
+      "src": "p014",
+      "structure": [
+        "구별점: diffusion model을 다른 잠재 변수 모델과 다르게 만드는 것은, 근사 사후분포 q(x1:T|x0)가 고정되어 있다는 점이다",
+        "이 사후분포의 이름: 순방향 과정, 또는 diffusion 과정이라 부른다",
+        "정의: 분산 스케줄 β1부터 βT에 따라 데이터에 점점 가우시안 잡음을 더해가는 마르코프 연쇄로 고정된다"
+      ],
+      "key_concepts": {
+        "approximate posterior q(x1:T|x0)": "근사 사후분포. 실제 데이터 x0가 주어졌을 때 잠재 변수들이 어떤 분포를 가질지에 대한 근사치입니다. 다른 생성 모델에서는 이것도 학습 대상이지만 diffusion model에서는 미리 고정합니다.",
+        "forward process (diffusion process)": "순방향 과정(diffusion 과정). 원본 데이터에서 시작해 점점 잡음을 더해가는, 미리 정해진 고정된 과정입니다.",
+        "fixed to a Markov chain": "마르코프 연쇄로 고정되어 있다는 것. 이 부분은 학습되지 않고 처음부터 정해진 규칙을 따른다는 것이 diffusion model의 결정적 설계 선택입니다.",
+        "variance schedule β1, ..., βT": "분산 스케줄. 각 단계마다 얼마나 많은 잡음을 더할지 정하는 값들의 나열로, 보통 갈수록 조금씩 커지도록 미리 설계됩니다."
+      },
+      "summary": "diffusion model을 다른 종류의 잠재 변수 모델과 다르게 만드는 것은, 순방향 과정 또는 diffusion 과정이라 불리는 근사 사후분포 q(x1:T|x0)가 고정되어 있다는 점이다. 이 순방향 과정은 분산 스케줄 β1부터 βT에 따라 데이터에 점점 가우시안 잡음을 더해가는 마르코프 연쇄로 고정된다.",
+      "sentences_ko": [
+        {"ko": "diffusion model을 다른 종류의 잠재 변수 모델과 다르게 만드는 것은, 순방향 과정 또는 diffusion 과정이라 불리는 근사 사후분포 q(x1:T|x0)가, 분산 스케줄 β1, ..., βT에 따라 데이터에 점점 가우시안 잡음을 더해가는 마르코프 연쇄로 고정되어 있다는 점이다.", "note": "What distinguishes A from B is that ~: A를 B와 다르게 만드는 것은 ~라는 점이다. called ~가 approximate posterior의 별칭을 알려줍니다. is fixed to ~가 이 논문의 핵심 설계를 명시합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "predict-noise",
+      "title": "3.2 표본 생성 — 신경망은 잡음을 맞힌다",
+      "src": "p037",
+      "drop": [2, 4],
+      "fix": {
+        "1": "Here, εθ is a function approximator intended to predict ε, the noise that was added, from the noisy image xt.",
+        "2": "The complete sampling procedure resembles Langevin dynamics, with εθ acting as a learned gradient of the data density.",
+        "3": "Optimizing an objective that resembles denoising score matching is therefore equivalent to using variational inference to fit a sampling chain that resembles Langevin dynamics."
+      },
+      "structure": [
+        "핵심 아이디어: 신경망 εθ는 잡음 낀 이미지 xt로부터 실제로 더해졌던 잡음 ε을 맞히도록 학습된다",
+        "비유: 전체 표본 생성 절차는 εθ가 데이터 밀도의 학습된 기울기 역할을 하는 Langevin dynamics와 닮았다",
+        "이론적 연결: denoising score matching과 닮은 목표를 최적화하는 것은, Langevin dynamics와 닮은 표본 생성 연쇄를 변분 추론으로 맞추는 것과 같다"
+      ],
+      "key_concepts": {
+        "function approximator εθ": "잡음을 예측하는 함수 근사기. 실제로는 신경망 하나이며, 잡음 낀 이미지를 보고 거기 섞인 잡음이 무엇이었는지 맞히도록 학습됩니다. 이것이 diffusion model의 실체입니다.",
+        "predict ε from xt": "xt로부터 ε을 예측한다. '이미지를 직접 그려내라'가 아니라 '여기 섞인 잡음이 뭔지 맞혀라'는 훨씬 쉬운 문제로 바꿔치기한 것이 이 모델의 영리한 점입니다.",
+        "learned gradient of the data density": "데이터 밀도의 학습된 기울기. 어느 방향으로 가면 더 그럴듯한 이미지에 가까워지는지를 신경망이 알려준다는 뜻입니다.",
+        "denoising score matching": "잡음 제거 점수 매칭. 다른 계열의 생성 모델링 기법인데, 이 논문은 자신들의 잡음 예측 방식이 수학적으로 이것과 같은 일을 한다는 것을 보입니다."
+      },
+      "summary": "여기서 εθ는 잡음 낀 이미지 xt로부터 실제로 더해졌던 잡음 ε을 예측하도록 만들어진 함수 근사기, 즉 신경망이다. 전체 표본 생성 절차는 εθ가 데이터 밀도의 학습된 기울기 역할을 하는 Langevin dynamics와 닮았다. 그래서 denoising score matching과 닮은 목표를 최적화하는 것은, Langevin dynamics와 닮은 표본 생성 연쇄를 변분 추론으로 맞추는 것과 동등하다.",
+      "sentences_ko": [
+        {"ko": "여기서 εθ는 잡음 낀 이미지 xt로부터, 실제로 더해졌던 잡음인 ε을 예측하도록 만들어진 함수 근사기다.", "note": "intended to ~: ~하도록 의도된. 신경망이 실제로 무엇을 배우는지를 정확히 짚는 핵심 문장입니다."},
+        {"ko": "전체 표본 생성 절차는, εθ가 데이터 밀도의 학습된 기울기 역할을 한다는 점에서 Langevin dynamics와 닮았다.", "note": "resembles ~: ~와 닮았다. with εθ acting as ~가 그 유사성의 근거를 부연합니다."},
+        {"ko": "denoising score matching과 닮은 목표를 최적화하는 것은, 따라서 Langevin dynamics와 닮은 표본 생성 연쇄의 유한 시간 주변 분포를 변분 추론으로 맞추는 것과 동등하다.", "note": "is equivalent to using ~: ~를 사용하는 것과 동등하다. 이 논문이 주장하는 핵심 수학적 등가성이 담긴 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "architecture",
+      "title": "4 Experiments — U-Net과 self-attention",
+      "src": "p049",
+      "structure": [
+        "구조 선택: 역방향 과정을 나타내기 위해 U-Net 형태의 신경망을 쓴다",
+        "참고 모델: unmasked PixelCNN++와 비슷하며, 전체에 group normalization을 적용한다",
+        "파라미터 공유: 모든 시간 단계에서 파라미터를 공유하되, Transformer의 sinusoidal position embedding으로 지금이 몇 번째 단계인지 신경망에 알려준다",
+        "추가 요소: 16×16 크기의 특징 지도에서는 self-attention도 쓴다"
+      ],
+      "key_concepts": {
+        "U-Net": "입력을 점점 줄여가며 특징을 뽑았다가, 다시 점점 키워가며 원래 크기로 복원하는 신경망 구조. 중간에 같은 크기의 층끼리 지름길로 연결되어 있어 이미지 생성이나 분할 과제에 널리 쓰입니다.",
+        "PixelCNN++": "이미지를 픽셀 단위로 순서대로 생성하는 자기회귀 모델의 한 종류로, 이 논문의 신경망 구조가 참고한 선행 모델입니다.",
+        "group normalization": "Batch Normalization의 변형으로, 미니배치 크기에 덜 민감하게 채널을 몇 개씩 묶어 정규화하는 기법입니다.",
+        "parameters shared across time": "모든 시간 단계 t에서 같은 신경망 하나를 재사용한다는 것. 단계마다 별도의 신경망을 두지 않고 하나로 통일해 효율을 높입니다.",
+        "sinusoidal position embedding": "사인·코사인 함수로 만든 위치 임베딩. Transformer 논문에서 순서 정보를 주던 방식을 그대로 빌려와, 지금이 diffusion의 몇 번째 단계인지 신경망에 알려주는 데 씁니다.",
+        "self-attention at 16×16 resolution": "16×16 크기의 특징 지도에서 쓰는 self-attention. 이미지 전체 해상도에서는 계산량이 너무 크므로, 충분히 작아진 중간 단계에서만 attention을 적용합니다."
+      },
+      "summary": "역방향 과정을 나타내기 위해 group normalization을 전체에 적용한, unmasked PixelCNN++와 비슷한 U-Net 형태의 신경망을 쓴다. 파라미터는 모든 시간 단계에서 공유되며, 지금이 diffusion의 몇 번째 단계인지는 Transformer의 sinusoidal position embedding으로 신경망에 알려준다. 16×16 크기의 특징 지도 해상도에서는 self-attention도 사용한다.",
+      "sentences_ko": [
+        {"ko": "역방향 과정을 나타내기 위해, 우리는 전체에 group normalization을 적용한, unmasked PixelCNN++와 비슷한 U-Net 형태의 신경망을 사용한다.", "note": "similar to ~: ~와 비슷한. with ~ throughout이 정규화가 신경망 전체에 걸쳐 적용됨을 나타냅니다."},
+        {"ko": "파라미터는 모든 시간 단계에 걸쳐 공유되며, 이는 Transformer의 sinusoidal position embedding을 사용해 신경망에 전달된다.", "note": "which is specified to ~ using ~가 지금 몇 번째 단계인지를 신경망에 알려주는 구체적 방법을 밝힙니다."},
+        {"ko": "우리는 16×16 특징 지도 해상도에서 self-attention을 사용한다.", "note": "at ~ resolution: ~ 해상도에서. 전체가 아니라 특정 크기에서만 적용된다는 조건을 명시합니다."},
+        {"ko": "자세한 내용은 부록 B에 있다.", "note": "Details are in ~: 자세한 내용은 ~에 있다. 세부 사항을 부록으로 미루는 논문의 관례적 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "6 Conclusion — 결론",
+      "src": "p084",
+      "structure": [
+        "성취 요약: diffusion model로 고품질 이미지 표본을 제시했다",
+        "발견한 연결고리들: 마르코프 연쇄 학습을 위한 변분 추론, denoising score matching과 담금질된 Langevin dynamics(나아가 에너지 기반 모델), 자기회귀 모델, 점진적 손실 압축 사이의 관계를 찾아냈다",
+        "전망: diffusion model이 이미지 데이터에 뛰어난 귀납적 편향을 가진 것으로 보이므로, 다른 데이터 형태와 다른 생성 모델·기계학습 시스템의 구성 요소로서의 쓸모를 계속 탐구하고 싶다"
+      ],
+      "key_concepts": {
+        "connections among diffusion models and ~": "diffusion model과 여러 기존 기법들 사이의 연결고리. 이 논문이 발견한 이론적 기여를 총정리하는 표현입니다.",
+        "by extension": "더 나아가서. 앞서 말한 연결이 자연스럽게 이어지는 또 다른 대상을 덧붙일 때 씁니다.",
+        "excellent inductive biases for image data": "이미지 데이터에 대한 뛰어난 귀납적 편향. diffusion model의 구조 자체가 이미지라는 데이터 형태에 잘 맞는 가정을 담고 있다는 관찰입니다.",
+        "other data modalities": "다른 데이터 형태. 이미지 말고 오디오, 텍스트 등 다른 종류의 데이터에도 이 모델을 적용해볼 수 있다는 전망입니다.",
+        "components in other types of generative models": "다른 종류의 생성 모델을 이루는 부품. diffusion model 자체가 하나의 완결된 모델일 뿐 아니라, 다른 시스템 안에 부품으로 들어갈 수도 있다는 확장 가능성입니다."
+      },
+      "summary": "이 논문은 diffusion model을 사용해 고품질 이미지 표본을 제시했고, diffusion model이 마르코프 연쇄 학습을 위한 변분 추론, denoising score matching과 담금질된 Langevin dynamics(더 나아가 에너지 기반 모델), 자기회귀 모델, 점진적 손실 압축 사이에 연결고리를 갖는다는 것을 발견했다. diffusion model이 이미지 데이터에 대해 뛰어난 귀납적 편향을 가진 것으로 보이므로, 저자들은 다른 데이터 형태에서의 쓸모와, 다른 종류의 생성 모델이나 기계학습 시스템의 구성 요소로서의 쓸모를 계속 탐구하고 싶어한다.",
+      "sentences_ko": [
+        {"ko": "우리는 diffusion model을 사용해 고품질 이미지 표본을 제시했고, diffusion model이 마르코프 연쇄 학습을 위한 변분 추론, denoising score matching과 담금질된 Langevin dynamics(더 나아가 에너지 기반 모델), 자기회귀 모델, 그리고 점진적 손실 압축 사이에서 갖는 연결고리를 발견했다.", "note": "have presented와 have found가 현재완료로 이 논문의 두 가지 기여를 나란히 정리합니다. among ~가 발견한 연결고리들을 한꺼번에 나열합니다."},
+        {"ko": "diffusion model이 이미지 데이터에 대해 뛰어난 귀납적 편향을 가진 것으로 보이므로, 우리는 다른 데이터 형태에서의 쓸모와, 다른 종류의 생성 모델이나 기계학습 시스템의 구성 요소로서의 쓸모를 계속 탐구하기를 고대한다.", "note": "Since가 이유절을 이끕니다. look forward to -ing가 앞으로의 연구 방향에 대한 기대를 표현합니다."}
+      ]
+    }
+  ]
+}

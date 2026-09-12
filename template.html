@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>논문읽기 도우미</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#ffffff; --border:#e3e5ea; --text:#1b1f24; --muted:#6b7280;
+  --accent:#2563eb; --accent-soft:#e3ecff; --green:#15803d; --green-soft:#dcfce7;
+  --amber:#b45309; --amber-soft:#fef3c7; --red:#dc2626; --red-soft:#fee2e2;
+  --orig-bg:#f8f9fb; --ko-bg:#eef4ff;
+  --heat0:#e6e8ee; --heat1:#bfdbfe; --heat2:#60a5fa; --heat3:#1d4ed8;
+  --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.05);
+}
+[data-theme=dark]{
+  --bg:#0f1115; --card:#181b22; --border:#2a2f3a; --text:#e8eaee; --muted:#9aa3b2;
+  --accent:#60a5fa; --accent-soft:#1e2a44; --green:#4ade80; --green-soft:#14301f;
+  --amber:#fbbf24; --amber-soft:#3a2b0c; --red:#f87171; --red-soft:#3b1414;
+  --orig-bg:#13161c; --ko-bg:#1a2233;
+  --heat0:#232833; --heat1:#1e3a8a; --heat2:#2563eb; --heat3:#93c5fd;
+  --shadow:none;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme=light]){
+  --bg:#0f1115; --card:#181b22; --border:#2a2f3a; --text:#e8eaee; --muted:#9aa3b2;
+  --accent:#60a5fa; --accent-soft:#1e2a44; --green:#4ade80; --green-soft:#14301f;
+  --amber:#fbbf24; --amber-soft:#3a2b0c; --red:#f87171; --red-soft:#3b1414;
+  --orig-bg:#13161c; --ko-bg:#1a2233;
+  --heat0:#232833; --heat1:#1e3a8a; --heat2:#2563eb; --heat3:#93c5fd;
+  --shadow:none;
+}}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR','Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+a{color:var(--accent)}
+button{font-family:inherit}
+.app{max-width:720px;margin:0 auto;padding:16px 16px 96px}
+
+/* 상단 */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.topbar h1{font-size:1.25rem;font-weight:700}
+.topbar p{color:var(--muted);font-size:.8rem}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--amber-soft);color:var(--amber);white-space:nowrap}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.icon-btn{flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--bg)}
+.chip.blue{background:var(--accent-soft);color:var(--accent)}
+.chip.green{background:var(--green-soft);color:var(--green)}
+.chip.gray{background:var(--border);color:var(--muted)}
+
+/* 카드 */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card h3{font-size:.95rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card ol,.card ul{padding-left:20px}
+.card li{margin-bottom:5px;font-size:.92rem}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+
+/* 배너 */
+.banner{border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.banner.todo{background:var(--accent-soft);color:var(--accent)}
+.banner.done{background:var(--green-soft);color:var(--green)}
+.banner strong{font-size:.95rem}
+.banner .sub{font-size:.8rem;opacity:.85}
+
+/* 논문 정보 */
+.paper-card h2{font-size:1.1rem;line-height:1.45;margin-bottom:6px}
+.paper-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.76rem;font-weight:500;background:var(--border);color:var(--muted)}
+.tag.venue{background:var(--accent-soft);color:var(--accent)}
+.tag.field{background:var(--green-soft);color:var(--green)}
+.tag a{text-decoration:none;color:inherit}
+.why{background:var(--amber-soft);color:var(--amber);padding:8px 12px;border-radius:8px;font-size:.86rem;line-height:1.55}
+
+/* 단락 점 */
+.dots{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+.dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--card);color:var(--muted);transition:.15s}
+.dot:hover{border-color:var(--accent)}
+.dot.done{border-color:var(--green);background:var(--green);color:#fff}
+.dot.active{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px;flex-wrap:wrap}
+.sec-head h2{font-size:1.02rem;font-weight:700}
+
+/* 핵심 개념 */
+.term{padding:8px 0;border-top:1px solid var(--border);font-size:.9rem}
+.term:first-child{border-top:none;padding-top:0}
+.term-row{display:flex;align-items:flex-start;gap:8px}
+.term .body{flex:1}
+.term .name{font-weight:700;color:var(--accent);background:var(--accent-soft);padding:0 6px;border-radius:4px;font-size:.86rem}
+.term .desc{display:block;margin-top:3px}
+.term-btns{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.term .add{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;padding:3px 8px;font-size:.74rem;cursor:pointer;white-space:nowrap}
+.term .add.on{background:var(--green-soft);color:var(--green);border-color:transparent}
+.basic-hint{border:1px solid var(--accent-soft);background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:3px 8px;font-size:.74rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.basic-box{display:none;margin-top:8px;padding:9px 11px;background:var(--accent-soft);border-radius:8px;font-size:.85rem;line-height:1.7;color:var(--text)}
+.basic-box.open{display:block}
+
+/* 용어 사전 */
+.gloss-item{padding:9px 0;border-top:1px solid var(--border)}
+.gloss-item:first-child{padding-top:0;border-top:none}
+.gloss-item .gt{font-weight:700;font-size:.92rem;margin-bottom:3px}
+.gloss-item .gd{font-size:.86rem;line-height:1.7;color:var(--muted)}
+
+/* 원문 */
+.orig{background:var(--orig-bg);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0}
+.orig .hint{font-size:.78rem;color:var(--muted);margin-bottom:8px}
+.sent{padding:4px 6px;margin:0 -6px;border-radius:6px;cursor:pointer;transition:background .15s}
+.sent:hover{background:var(--accent-soft)}
+.sent .en{font-size:.95rem;line-height:1.8;font-family:Georgia,'Times New Roman',serif}
+.sent.open .en{color:var(--accent)}
+.sent .ko{display:none;margin:6px 0 4px;padding:8px 10px;background:var(--ko-bg);border-radius:8px;font-size:.88rem;line-height:1.6;cursor:default}
+.sent.open .ko{display:block}
+.sent .ko .note{margin-top:5px;padding-top:5px;border-top:1px dashed var(--border);color:var(--muted);font-size:.82rem}
+.sent .ko .note b{color:var(--amber)}
+.linkbtn{background:none;border:none;color:var(--accent);font-size:.8rem;cursor:pointer;font-weight:600;padding:0}
+
+/* 버튼 */
+.actions{display:flex;gap:8px;margin:18px 0 12px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;padding:12px 14px;border:none;border-radius:10px;font-size:.92rem;font-weight:600;cursor:pointer;text-align:center;transition:.15s}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.sm{flex:none;padding:8px 12px;font-size:.82rem;min-width:0}
+.btn.danger{background:var(--red-soft);color:var(--red)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.nav-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:20px}
+
+.done-card{text-align:center;padding:22px 16px}
+.done-card .big{font-size:2rem;margin-bottom:6px}
+.done-card h3{justify-content:center;font-size:1.05rem}
+.done-card p{font-size:.88rem;color:var(--muted);margin-bottom:12px}
+
+/* 가이드 */
+.guide{font-size:.82rem;line-height:1.7;color:var(--muted)}
+.guide strong{color:var(--text)}
+
+/* 논문 목록 */
+.plist .item{display:block;cursor:pointer}
+.plist .item:hover{border-color:var(--accent)}
+.plist .row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.plist .num{color:var(--muted);font-size:.8rem;font-weight:600}
+.plist h4{font-size:.98rem;line-height:1.4;margin:2px 0 4px}
+.bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:10px}
+.bar>div{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.bar.full>div{background:var(--green)}
+
+/* 통계 */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 10px;text-align:center}
+.tile .v{font-size:1.4rem;font-weight:700;line-height:1.2}
+.tile .l{font-size:.74rem;color:var(--muted);margin-top:2px}
+.heat{display:flex;gap:3px;overflow-x:auto;padding-bottom:4px}
+.heat .col{display:flex;flex-direction:column;gap:3px}
+.heat .c{width:13px;height:13px;border-radius:3px;background:var(--heat0)}
+.heat .c.l1{background:var(--heat1)}.heat .c.l2{background:var(--heat2)}.heat .c.l3{background:var(--heat3)}
+.heat .c.future{opacity:.25}
+.heat-months{display:flex;gap:3px;font-size:.68rem;color:var(--muted);margin-bottom:4px}
+.heat-months span{width:13px;flex:none;white-space:nowrap}
+.legend{display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);margin-top:6px;justify-content:flex-end}
+.legend .c{width:11px;height:11px;border-radius:2px;background:var(--heat0)}
+.settings label{display:block;font-size:.85rem;font-weight:600;margin:12px 0 6px}
+.settings select,.settings textarea,.settings input{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:.88rem;font-family:inherit}
+.settings textarea{min-height:80px;font-family:ui-monospace,Menlo,monospace;font-size:.75rem}
+.settings .row{display:flex;gap:8px;margin-top:8px}
+.settings .chk{display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-size:.88rem;font-weight:600;cursor:pointer}
+.settings .chk input{width:auto;accent-color:var(--accent)}
+
+/* 단어장 */
+.search{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:.9rem;margin-bottom:10px}
+.vitem{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--border)}
+.vitem:first-child{border-top:none}
+.vitem .t{font-weight:700;font-size:.9rem}
+.vitem .d{font-size:.84rem;color:var(--muted);margin-top:2px}
+.vitem .meta{font-size:.72rem;color:var(--muted);margin-top:3px}
+.vitem .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px}
+.box{display:inline-block;padding:0 6px;border-radius:4px;font-size:.7rem;font-weight:600;background:var(--border);color:var(--muted)}
+.box.b1{background:var(--red-soft);color:var(--red)}.box.b2{background:var(--amber-soft);color:var(--amber)}.box.b3{background:var(--accent-soft);color:var(--accent)}.box.b4{background:var(--green-soft);color:var(--green)}
+.flash{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:28px 18px}
+.flash .term{font-size:1.35rem;font-weight:700;border:none;padding:0;display:block}
+.flash .src{font-size:.78rem;color:var(--muted);margin-top:8px}
+.flash .ans{font-size:.95rem;line-height:1.7;margin-top:6px}
+.flash .tap{font-size:.78rem;color:var(--muted);margin-top:14px}
+.form-row{display:flex;flex-direction:column;gap:8px}
+.form-row input{padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:.88rem}
+
+/* 탭바 */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:10}
+.tabbar .inner{display:flex;width:100%;max-width:720px}
+.tab{flex:1;background:none;border:none;padding:9px 4px 7px;font-size:.72rem;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:600}
+.tab .ic{font-size:1.25rem}
+.tab.active{color:var(--accent)}
+
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:.84rem;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.show{opacity:1}
+.view{display:none}.view.active{display:block}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div><h1>📖 논문읽기 도우미</h1><p>하루에 한 단락씩. 조금씩, 꾸준히.</p></div>
+    <div class="topbar-right">
+      <span class="chip" id="streakChip">🔥 0일</span>
+      <button class="icon-btn" onclick="showView('settings')" title="설정" aria-label="설정">⚙️</button>
+    </div>
+  </div>
+  <section class="view active" id="view-today"></section>
+  <section class="view" id="view-papers"></section>
+  <section class="view" id="view-stats"></section>
+  <section class="view" id="view-vocab"></section>
+  <section class="view" id="view-glossary"></section>
+  <section class="view" id="view-settings"></section>
+</div>
+<nav class="tabbar"><div class="inner">
+  <button class="tab active" data-view="today"><span class="ic">📖</span>오늘</button>
+  <button class="tab" data-view="glossary"><span class="ic">📘</span>용어</button>
+  <button class="tab" data-view="papers"><span class="ic">📚</span>논문</button>
+  <button class="tab" data-view="stats"><span class="ic">📅</span>기록</button>
+  <button class="tab" data-view="vocab"><span class="ic">🃏</span>단어장</button>
+</div></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const PAPERS = /*__PAPERS_JSON__*/[];
+// === 왕초보 용어 사전 (논문 지식이 전혀 없어도 읽을 수 있도록) ===
+const GLOSSARY = [
+  { cat: 'basic', term: '인공지능 (AI)', alias: ['artificial intelligence'], desc: '컴퓨터가 사람처럼 보고 듣고 판단하도록 만든 프로그램을 통틀어 부르는 말입니다. 사진 속 강아지를 알아보거나 스팸 메일을 걸러내는 것도 모두 인공지능의 한 종류입니다.' },
+  { cat: 'basic', term: '머신러닝 (기계학습)', alias: ['machine learning'], desc: '규칙을 사람이 일일이 정해주는 대신, 컴퓨터에게 아주 많은 예시를 보여주고 스스로 규칙을 찾아내게 만드는 방법입니다. 고양이 사진 수천 장을 보여주면 컴퓨터가 고양이의 특징을 스스로 알아내는 식입니다.' },
+  { cat: 'basic', term: '인공신경망 (neural network)', alias: ['neural network', '신경망'], desc: '사람 뇌 속 신경세포(뉴런)들이 서로 연결되어 신호를 주고받는 방식을 흉내 낸 계산 구조입니다. 아주 단순한 계산을 하는 작은 부품을 수백만 개 연결해서 복잡한 일을 해내게 만듭니다.' },
+  { cat: 'basic', term: '뉴런 / 유닛', alias: ['neuron', 'unit'], desc: '신경망을 이루는 가장 작은 계산 단위입니다. 숫자 여러 개를 받아 하나의 숫자로 계산해서 다음 뉴런에게 넘겨주는, 아주 단순한 작은 계산기라고 생각하면 됩니다.' },
+  { cat: 'basic', term: '층 / 레이어 (layer)', alias: ['layer', '층'], desc: '뉴런을 한 줄로 모아놓은 것입니다. 신경망은 이런 층을 여러 겹 쌓아 만드는데, 층을 많이 쌓을수록 더 복잡한 것을 배울 수 있습니다.' },
+  { cat: 'basic', term: '딥러닝 (deep learning)', alias: ['deep learning', '딥러닝'], desc: '층을 아주 깊게(많이) 쌓은 신경망으로 학습하는 방법입니다. 여기 실린 논문들은 대부분 "깊은 신경망을 어떻게 하면 잘 학습시킬 수 있을까"를 다룹니다.' },
+  { cat: 'train', term: '파라미터 / 가중치 (weight)', alias: ['parameter', 'weight', '가중치', '파라미터'], desc: '신경망 안에서 학습을 통해 조금씩 값이 바뀌는 숫자들입니다. 라디오의 볼륨 손잡이처럼, 이 숫자들을 잘 맞춰야 신경망이 좋은 답을 냅니다. "파라미터 6천만 개"라는 말은 조절할 손잡이가 6천만 개 있다는 뜻입니다.' },
+  { cat: 'train', term: '학습 / 훈련 (training)', alias: ['training', '학습'], desc: '신경망에게 문제와 정답을 계속 보여주면서 파라미터(숫자 손잡이)를 조금씩 고쳐, 정답에 더 가까운 답을 내도록 만드는 과정입니다. 문제집을 풀고 채점받아 틀린 곳을 고쳐나가는 것과 비슷합니다.' },
+  { cat: 'train', term: '데이터셋 (dataset)', alias: ['dataset', '데이터셋'], desc: '신경망에게 보여주는 예시들의 모음입니다. 대개 "문제"(사진이나 문장)와 그에 대한 "정답"이 쌍으로 들어 있습니다.' },
+  { cat: 'train', term: '손실 함수 (loss function)', alias: ['loss function', '손실'], desc: '신경망이 낸 답이 정답과 얼마나 다른지를 하나의 점수로 나타낸 것입니다. 이 점수가 낮을수록 잘 맞힌 것이고, 학습의 목표는 이 점수를 계속 낮추는 것입니다.' },
+  { cat: 'train', term: '기울기 / 그래디언트 (gradient)', alias: ['gradient', '기울기'], desc: '지금 파라미터를 어느 방향으로 바꾸면 손실(오답 정도) 점수가 줄어드는지 알려주는 나침반 같은 것입니다.' },
+  { cat: 'train', term: '경사 하강법 (gradient descent)', alias: ['gradient descent', '경사 하강'], desc: '기울기가 가리키는 방향으로 파라미터를 아주 조금씩 계속 옮겨서, 손실 점수를 산비탈을 내려가듯 점점 줄이는 학습 방법입니다.' },
+  { cat: 'train', term: '역전파 (backpropagation)', alias: ['backpropagation', 'backprop', '역전파'], desc: '최종 손실 점수에서부터 거꾸로 계산을 되짚어가며, 신경망 안의 각 파라미터를 얼마나 고쳐야 할지 알아내는 방법입니다. 경사 하강법에 필요한 기울기를 실제로 계산해 내는 절차입니다.' },
+  { cat: 'train', term: '학습률 (learning rate)', alias: ['learning rate', '학습률'], desc: '파라미터를 한 번에 얼마나 크게 움직일지 정하는 값입니다. 너무 크게 잡으면 정답을 지나쳐 버리고, 너무 작게 잡으면 학습이 한없이 느려집니다.' },
+  { cat: 'train', term: '활성화 함수 (activation function)', alias: ['activation function', 'ReLU', 'sigmoid', '시그모이드'], desc: '뉴런이 계산한 값을 다음 뉴런에 넘기기 전에 한 번 걸러주는 규칙입니다. 이것이 없으면 신경망을 아무리 깊게 쌓아도 단순한 계산 이상을 하지 못합니다.' },
+  { cat: 'train', term: '확률 (probability)', alias: ['probability', '확률'], desc: '어떤 일이 일어날 가능성을 0(절대 일어나지 않음)에서 1(반드시 일어남) 사이의 숫자로 나타낸 것입니다. 신경망의 마지막 출력은 흔히 "이 사진이 고양이일 확률 90%" 같은 형태입니다.' },
+  { cat: 'train', term: '과적합 (overfitting)', alias: ['overfitting', '과적합'], desc: '문제집의 문제와 답을 통째로 외워버려서, 그 문제집 안의 문제는 다 맞히지만 새로운 문제는 못 푸는 상태입니다. 신경망이 학습 데이터에만 너무 딱 맞춰져서 실전(새 데이터)에는 약해지는 현상입니다.' },
+  { cat: 'train', term: '사전학습과 미세조정', alias: ['pre-training', 'fine-tuning', '사전학습', '미세조정'], desc: '먼저 아주 많은 양의 일반적인 데이터로 폭넓게 공부시킨 뒤(사전학습), 실제로 풀고 싶은 좁은 문제에 맞춰 조금 더 훈련시키는(미세조정) 2단계 방법입니다. 교양 과목을 두루 배운 뒤 전공 수업을 듣는 것과 비슷합니다.' },
+  { cat: 'train', term: '벤치마크 (benchmark)', alias: ['benchmark', '벤치마크'], desc: '여러 모델의 실력을 공정하게 비교하기 위해 미리 정해둔 표준 시험(문제 모음과 채점 방식)입니다.' },
+  { cat: 'struct', term: 'RNN (순환 신경망)', alias: ['RNN', 'Recurrent Neural'], desc: '문장처럼 순서가 있는 데이터를 앞에서부터 한 조각씩 읽으면서, 지금까지 읽은 내용을 계속 기억해두었다가 다음 조각을 읽을 때 참고하는 신경망입니다. 사람이 책을 한 줄씩 읽으며 줄거리를 머릿속에 쌓아가는 것과 비슷합니다. 다만 순서대로만 읽을 수 있어서 처리 속도가 느립니다.' },
+  { cat: 'struct', term: 'CNN (합성곱 신경망)', alias: ['CNN', 'Convolutional'], desc: '작은 창(필터)을 사진 위에서 조금씩 옮겨가며 훑어서, 그 자리에 어떤 무늬(모서리, 색깔 경계 등)가 있는지 찾아내는 신경망입니다. 돋보기로 사진을 구석구석 훑으며 특징을 찾는 것과 비슷하며, 주로 이미지 처리에 쓰입니다.' },
+  { cat: 'struct', term: '은닉 상태 (hidden state)', alias: ['hidden state', '은닉 상태'], desc: 'RNN이 지금까지 읽은 내용을 압축해서 기억해두는 내부 저장 공간입니다. 소설을 읽으며 머릿속에 요약해두는 줄거리 같은 것입니다.' },
+  { cat: 'struct', term: '시퀀스 (sequence)', alias: ['sequence', '시퀀스'], desc: '순서가 있는 데이터의 나열입니다. 문장은 단어들의 시퀀스이고, 음악은 음표들의 시퀀스입니다.' },
+  { cat: 'struct', term: '토큰 (token)', alias: ['token', '토큰'], desc: '문장을 컴퓨터가 다루기 좋은 작은 조각으로 자른 것입니다. 보통 단어 하나 또는 단어의 일부가 토큰 하나가 됩니다.' },
+  { cat: 'struct', term: '임베딩 (embedding)', alias: ['embedding', '임베딩'], desc: '단어나 토큰을 숫자 목록(벡터)으로 바꾼 것입니다. 의미가 비슷한 단어(예: "강아지"와 "개")는 서로 비슷한 숫자 목록을 갖도록 학습됩니다.' },
+  { cat: 'struct', term: '벡터 (vector)', alias: ['vector', '벡터'], desc: '여러 개의 숫자를 순서대로 늘어놓은 것입니다. 신경망은 단어든 이미지든 모든 것을 이런 숫자 목록으로 바꿔서 계산합니다.' },
+  { cat: 'struct', term: '어텐션 (attention)', alias: ['attention', '어텐션'], desc: '문장의 한 단어를 이해할 때, 문장 안의 다른 모든 단어를 한 번씩 둘러보면서 "이 단어와 관련 있는 정도"에 따라 가중치를 주는 방법입니다. 시험 문제를 풀 때 관련된 힌트 쪽으로 눈길이 더 가는 것과 비슷합니다.' },
+  { cat: 'struct', term: '게이트 (gate)', alias: ['gate', '게이트'], desc: '정보를 통과시킬지 막을지 정하는 작은 문입니다. 0에 가까우면 닫혀서 정보를 막고 1에 가까우면 열려서 정보를 그대로 통과시키며, 이 열고 닫는 정도도 학습으로 정해집니다.' },
+];
+function escRe(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function matchGlossary(name) {
+  // 영단어 별칭은 단어 경계로 정확히 맞춰본다 (예: "neural network"가 "neural networks"에 안 걸리도록).
+  // 여러 항목이 걸리면 가장 길게 맞은 별칭을 쓴 항목이 더 구체적인 것으로 보고 그것을 택한다.
+  const n = name.toLowerCase();
+  let best = null, bestLen = 0;
+  for (const g of GLOSSARY) {
+    for (const a of g.alias) {
+      const al = a.toLowerCase();
+      const isAscii = /^[a-z0-9][a-z0-9 -]*$/.test(al);
+      const hit = isAscii ? new RegExp('\\b' + escRe(al) + '\\b', 'i').test(name) : n.includes(al);
+      if (hit && al.length > bestLen) { best = g; bestLen = al.length; }
+    }
+  }
+  return best;
+}
+const STORE_KEY = 'prd_state_v2';
+const INTERVALS = [1, 3, 7, 14];          // 단어장 상자별 복습 간격(일)
+const QUEUE = [];
+PAPERS.forEach((p, pi) => p.sections.forEach((s, si) => QUEUE.push({ p, s, pi, si, key: p.id + ':' + s.paragraph_id })));
+
+// ---------- 유틸 ----------
+const pad = n => String(n).padStart(2, '0');
+const dstr = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => dstr(new Date());
+function addDays(s, n) { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n); return dstr(d); }
+const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+let toastTimer;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200); }
+const paperUrl = p => p.url || ('https://arxiv.org/abs/' + p.arxiv);
+const shortName = p => p.short || p.title;
+
+// ---------- 상태 ----------
+function defaultState() { return { version: 2, read: {}, days: {}, vocab: {}, cursor: null, theme: 'auto', fontSize: 'md', autoKo: false }; }
+function loadState() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch {}
+  if (!s || s.version !== 2) {
+    s = defaultState();
+    try { const old = JSON.parse(localStorage.getItem('paper_progress') || '{}'); for (const k in old) if (old[k]) s.read[k] = ''; } catch {}
+  }
+  for (const k of ['read', 'days', 'vocab']) if (!s[k] || typeof s[k] !== 'object') s[k] = {};
+  if (!s.theme) s.theme = 'auto';
+  if (!s.fontSize) s.fontSize = 'md';
+  if (typeof s.autoKo !== 'boolean') s.autoKo = false;
+  return s;
+}
+let S = loadState();
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch {} }
+
+// ---------- 큐/커서 ----------
+const qIndex = (pi, si) => QUEUE.findIndex(q => q.pi === pi && q.si === si);
+const isRead = q => q.key in S.read;
+function nextUnread(pi, si, inclusive = true) {
+  const start = Math.max(qIndex(pi, si), 0), n = QUEUE.length;
+  for (let k = 0; k < n; k++) { const q = QUEUE[(start + (inclusive ? k : k + 1)) % n]; if (!isRead(q)) return q; }
+  return null;
+}
+let cur = { pi: 0, si: 0 };
+(function initCursor() {
+  if (S.cursor && PAPERS[S.cursor.pi] && PAPERS[S.cursor.pi].sections[S.cursor.si]) cur = { ...S.cursor };
+  const q = QUEUE[qIndex(cur.pi, cur.si)];
+  if (q && isRead(q)) { const nx = nextUnread(cur.pi, cur.si); if (nx) cur = { pi: nx.pi, si: nx.si }; }
+})();
+function setCursor(pi, si) { cur = { pi, si }; S.cursor = { pi, si }; save(); }
+let flash = null;   // 방금 읽음 처리한 단락 정보 {key, newTerms}
+let showAllKo = S.autoKo;  // 설정에서 '기본으로 펼치기'를 켜면 처음부터 열려 있다
+
+// ---------- 통계 ----------
+function streak() { let d = today(); if (!S.days[d]) d = addDays(d, -1); let n = 0; while (S.days[d] > 0) { n++; d = addDays(d, -1); } return n; }
+function longestStreak() {
+  const ds = Object.keys(S.days).filter(k => S.days[k] > 0).sort(); let best = 0, run = 0, prev = null;
+  for (const d of ds) { run = prev && addDays(prev, 1) === d ? run + 1 : 1; best = Math.max(best, run); prev = d; } return best;
+}
+const readCount = () => Object.keys(S.read).filter(k => QUEUE.some(q => q.key === k)).length;
+const paperDone = p => p.sections.filter(s => (p.id + ':' + s.paragraph_id) in S.read).length;
+const dueCards = () => Object.keys(S.vocab).filter(t => (S.vocab[t].due || '') <= today());
+
+// ---------- 화면 전환 ----------
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  vocabSession = null;
+  renderAll();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showView(t.dataset.view)));
+// 용어 문자열에 따옴표가 들어가도 안전하도록 인라인 onclick 대신 이벤트 위임을 쓴다
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  if (el.dataset.act === 'vocab-toggle') { e.stopPropagation(); toggleVocab(el.dataset.term, el.dataset.desc, el.dataset.paper); }
+  else if (el.dataset.act === 'vocab-del') { e.stopPropagation(); delVocab(el.dataset.term); }
+  else if (el.dataset.act === 'basic-toggle') {
+    e.stopPropagation();
+    const box = el.closest('.term').querySelector('.basic-box');
+    box.classList.toggle('open');
+    el.textContent = box.classList.contains('open') ? '📘 접기' : '📘 왕초보';
+  }
+});
+function renderAll() {
+  $('streakChip').textContent = '🔥 ' + streak() + '일';
+  renderToday(); renderPapers(); renderStats(); renderVocab(); renderGlossary(); renderSettings();
+}
+
+// ---------- 오늘 ----------
+function renderToday() {
+  const el = $('view-today');
+  if (!QUEUE.length) { el.innerHTML = '<div class="empty">아직 논문 데이터가 없습니다. build.py 를 실행하세요.</div>'; return; }
+  const q = QUEUE[qIndex(cur.pi, cur.si)], p = q.p, s = q.s;
+  const todayCount = S.days[today()] || 0, st = streak();
+  const total = QUEUE.length, done = readCount();
+  const nextQ = nextUnread(0, 0);
+  const allDone = !nextQ;
+  let html = '';
+
+  // 배너
+  if (allDone) html += `<div class="banner done"><div><strong>🎉 모든 논문을 다 읽었습니다!</strong><div class="sub">${total}단락 완주. 단어장 복습으로 다지거나 처음부터 다시 읽어보세요.</div></div></div>`;
+  else if (todayCount > 0) html += `<div class="banner done"><div><strong>✅ 오늘 목표 달성 · ${todayCount}단락 읽음</strong><div class="sub">🔥 ${st}일 연속 · 더 읽어도 좋고, 여기서 멈춰도 충분해요.</div></div><span class="chip green">${done}/${total}</span></div>`;
+  else html += `<div class="banner todo"><div><strong>📖 오늘의 단락</strong><div class="sub">${st > 0 ? '🔥 ' + st + '일 연속 · 오늘도 한 단락만 읽으면 이어집니다' : '한 단락만 읽어도 오늘은 성공입니다'}</div></div><span class="chip blue">${done}/${total}</span></div>`;
+
+  // 논문 정보
+  const pd = paperDone(p);
+  html += `<div class="card paper-card"><h2>${esc(p.title)}</h2>
+    <div class="muted small">${esc(p.authors)} · ${p.year}</div>
+    <div class="paper-meta"><span class="tag venue">${esc(p.venue)}</span><span class="tag field">${esc(p.category_ko)}</span><span class="tag"><a href="${esc(paperUrl(p))}" target="_blank" rel="noopener">원문 링크 ↗</a></span><span class="tag">${pd}/${p.sections.length} 단락</span></div>
+    <div class="why"><strong>⭐ 왜 읽어야 할까:</strong> ${esc(p.why_must_read)}</div></div>`;
+
+  // 단락 점
+  html += '<div class="dots">' + p.sections.map((sec, i) => {
+    const k = p.id + ':' + sec.paragraph_id, cls = i === cur.si ? 'active' : (k in S.read ? 'done' : '');
+    return `<div class="dot ${cls}" title="${esc(sec.title)}" onclick="goSection(${i})">${i + 1}</div>`;
+  }).join('') + '</div>';
+
+  // 단락 헤더
+  const rd = S.read[q.key];
+  let badge = isRead(q) ? `<span class="chip green">✓ 읽음${rd ? ' · ' + rd : ''}</span>` : (nextQ && nextQ.key === q.key ? '<span class="chip blue">오늘의 단락</span>' : '<span class="chip gray">아직 안 읽음</span>');
+  html += `<div class="sec-head"><h2>${cur.si + 1}/${p.sections.length} · ${esc(s.title)}</h2>${badge}</div>`;
+
+  // 1. 구조
+  html += `<div class="card"><h3>🔍 1. 단락 구조 <span class="muted small" style="font-weight:400">논리 흐름</span></h3><ol>${s.structure.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
+  // 2. 개념
+  html += `<div class="card"><h3>📚 2. 핵심 개념 <span class="muted small" style="font-weight:400">읽기 전에 미리</span></h3>` + Object.entries(s.key_concepts).map(([t, d]) => {
+    const on = t in S.vocab;
+    const g = matchGlossary(t);
+    return `<div class="term"><div class="term-row"><div class="body"><span class="name">${esc(t)}</span><span class="desc">${esc(d)}</span></div><div class="term-btns">${g ? `<button class="basic-hint" data-act="basic-toggle">📘 왕초보</button>` : ''}<button class="add ${on ? 'on' : ''}" data-act="vocab-toggle" data-term="${esc(t)}" data-desc="${esc(d)}" data-paper="${esc(p.id)}">${on ? '✓ 단어장' : '+ 단어장'}</button></div></div>${g ? `<div class="basic-box">💡 <b>${esc(g.term)}</b> — ${esc(g.desc)}</div>` : ''}</div>`;
+  }).join('') + '</div>';
+  // 3. 요약
+  html += `<div class="card"><h3>📝 3. 요약</h3><p style="font-size:.92rem">${esc(s.summary)}</p></div>`;
+  // 4. 원문
+  html += `<div class="card orig"><h3>🔎 4. 원문 <button class="linkbtn" onclick="toggleAllKo()">${showAllKo ? '해석 모두 숨기기' : '해석 모두 보기'}</button></h3>
+    <div class="hint">문장을 누르면 해석과 구문 포인트가 열립니다. 먼저 스스로 읽어보세요.</div>` +
+    s.sentences.map((x, i) => `<div class="sent ${showAllKo ? 'open' : ''}" onclick="toggleSent(this)"><div class="en">${esc(x.en)}</div><div class="ko" onclick="event.stopPropagation()">${esc(x.ko)}${x.note ? `<div class="note"><b>구문</b> ${esc(x.note)}</div>` : ''}</div></div>`).join('') +
+    `</div>`;
+
+  // 액션
+  if (flash && flash.key === q.key) {
+    html += `<div class="card done-card"><div class="big">🎉</div><h3>읽었습니다!</h3><p>오늘 ${todayCount}단락 · 🔥 ${st}일 연속${flash.newTerms ? `<br>새 용어 ${flash.newTerms}개가 단어장에 들어갔어요.` : ''}</p>
+      <div class="actions" style="margin:0">${nextUnread(cur.pi, cur.si, false) ? '<button class="btn primary" onclick="readMore()">하나 더 읽기 →</button>' : ''}<button class="btn ghost" onclick="stopToday()">오늘은 여기까지</button></div></div>`;
+  } else if (!isRead(q)) {
+    html += `<div class="actions"><button class="btn primary" onclick="markRead()">✅ 다 읽었어요</button></div>`;
+  } else {
+    html += `<div class="actions">${nextQ ? '<button class="btn primary" onclick="goNextUnread()">다음 안 읽은 단락 →</button>' : ''}<button class="btn ghost sm" onclick="unmarkRead()">읽음 취소</button></div>`;
+  }
+  const qi = qIndex(cur.pi, cur.si);
+  html += `<div class="nav-row"><button class="btn ghost sm" ${qi <= 0 ? 'disabled' : ''} onclick="goQueue(${qi - 1})">← 이전 단락</button><button class="btn ghost sm" ${qi >= QUEUE.length - 1 ? 'disabled' : ''} onclick="goQueue(${qi + 1})">다음 단락 →</button></div>`;
+  html += `<div class="card guide"><strong>💡 읽기 가이드</strong><br>1. 구조로 흐름을 잡고 → 2. 개념을 확인한 뒤 → 3. 요약을 읽고 → 4. 원문을 직접 읽으세요.<br>막히는 문장만 눌러 해석을 확인하고, 한 문장은 스스로 해석해 보세요. 다 읽었으면 <strong>"다 읽었어요"</strong>를 누릅니다.<br>RNN, 파라미터처럼 낯선 단어가 나오면 핵심 개념의 <strong>📘 왕초보</strong> 버튼을 누르거나, 하단 <strong>용어</strong> 탭에서 기초부터 찾아보세요.</div>`;
+  el.innerHTML = html;
+}
+function toggleSent(el) { el.classList.toggle('open'); }
+function toggleAllKo() { showAllKo = !showAllKo; renderToday(); }
+function goSection(i) { flash = null; showAllKo = S.autoKo; setCursor(cur.pi, i); renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function goQueue(i) { const q = QUEUE[i]; if (!q) return; flash = null; showAllKo = S.autoKo; setCursor(q.pi, q.si); renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function goNextUnread() { const nx = nextUnread(cur.pi, cur.si, false) || nextUnread(0, 0); if (nx) goQueue(qIndex(nx.pi, nx.si)); }
+function markRead() {
+  const q = QUEUE[qIndex(cur.pi, cur.si)]; if (isRead(q)) return;
+  const d = today();
+  S.read[q.key] = d; S.days[d] = (S.days[d] || 0) + 1;
+  let added = 0;
+  for (const [t, desc] of Object.entries(q.s.key_concepts)) if (!S.vocab[t]) { S.vocab[t] = { desc, paper: q.p.id, added: d, box: 1, due: d, seen: 0 }; added++; }
+  S.cursor = { ...cur }; save();
+  flash = { key: q.key, newTerms: added }; showAllKo = S.autoKo;
+  renderAll();
+  const target = document.querySelector('.done-card'); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function unmarkRead() {
+  const q = QUEUE[qIndex(cur.pi, cur.si)]; const d = S.read[q.key];
+  if (!confirm('이 단락의 읽음 표시를 취소할까요?')) return;
+  delete S.read[q.key]; if (d && S.days[d]) { S.days[d]--; if (S.days[d] <= 0) delete S.days[d]; }
+  flash = null; save(); renderAll();
+}
+function readMore() { flash = null; goNextUnread(); }
+function stopToday() { flash = null; showView('stats'); toast('오늘도 수고했어요 🙌'); }
+
+// ---------- 논문 목록 ----------
+function renderPapers() {
+  const el = $('view-papers');
+  el.innerHTML = '<div class="card guide" style="margin-bottom:12px"><strong>📚 필독 논문 ' + PAPERS.length + '편</strong> · 논문을 누르면 그 논문의 다음 단락으로 이동합니다.</div><div class="plist">' + PAPERS.map((p, i) => {
+    const d = paperDone(p), n = p.sections.length, pct = n ? d / n * 100 : 0;
+    const chip = d === n ? '<span class="chip green">완료</span>' : d > 0 ? `<span class="chip blue">${d}/${n}</span>` : '<span class="chip gray">시작 전</span>';
+    return `<div class="card item" onclick="openPaper(${i})"><div class="row"><div><div class="num">${i + 1}. ${esc(p.category)}</div><h4>${esc(p.title)}</h4><div class="muted small">${esc(p.authors)} · ${p.year} · ${esc(p.venue)}</div></div>${chip}</div>
+      <div class="muted small" style="margin-top:6px">${esc(p.why_must_read)}</div><div class="bar ${d === n ? 'full' : ''}"><div style="width:${pct}%"></div></div></div>`;
+  }).join('') + '</div>';
+}
+function openPaper(pi) {
+  const p = PAPERS[pi]; let si = p.sections.findIndex(s => !((p.id + ':' + s.paragraph_id) in S.read)); if (si < 0) si = 0;
+  flash = null; showAllKo = false; setCursor(pi, si); showView('today');
+}
+
+// ---------- 기록 ----------
+function renderStats() {
+  const el = $('view-stats');
+  const total = QUEUE.length, done = readCount(), papersDone = PAPERS.filter(p => paperDone(p) === p.sections.length && p.sections.length).length;
+  let html = `<div class="tiles">
+    <div class="tile"><div class="v">🔥 ${streak()}</div><div class="l">연속 일수</div></div>
+    <div class="tile"><div class="v">${longestStreak()}</div><div class="l">최장 연속</div></div>
+    <div class="tile"><div class="v">${Object.keys(S.days).length}</div><div class="l">읽은 날</div></div>
+    <div class="tile"><div class="v">${done}<span class="muted" style="font-size:.8rem">/${total}</span></div><div class="l">읽은 단락</div></div>
+    <div class="tile"><div class="v">${papersDone}<span class="muted" style="font-size:.8rem">/${PAPERS.length}</span></div><div class="l">완독 논문</div></div>
+    <div class="tile"><div class="v">${Object.keys(S.vocab).length}</div><div class="l">단어장</div></div></div>`;
+  // 히트맵 (최근 20주)
+  const weeks = 20, t = today(), td = new Date(t + 'T00:00:00');
+  const start = addDays(t, -((weeks - 1) * 7 + td.getDay()));
+  let cols = '', months = '', d = start, lastMonth = '';
+  for (let w = 0; w < weeks; w++) {
+    let col = '';
+    for (let i = 0; i < 7; i++) {
+      const c = S.days[d] || 0, fut = d > t;
+      col += `<div class="c ${fut ? 'future' : c >= 3 ? 'l3' : c === 2 ? 'l2' : c === 1 ? 'l1' : ''}" title="${d}: ${c}단락"></div>`;
+      if (i === 0) { const m = d.slice(5, 7); months += `<span>${m !== lastMonth ? parseInt(m) + '월' : ''}</span>`; lastMonth = m; }
+      d = addDays(d, 1);
+    }
+    cols += `<div class="col">${col}</div>`;
+  }
+  html += `<div class="card"><h3>📅 최근 ${weeks}주</h3><div style="overflow-x:auto"><div class="heat-months">${months}</div><div class="heat">${cols}</div></div><div class="legend">적음 <span class="c"></span><span class="c l1"></span><span class="c l2"></span><span class="c l3"></span> 많음</div></div>`;
+  // 최근 읽은 단락
+  const recent = Object.entries(S.read).filter(([k, v]) => v).sort((a, b) => b[1].localeCompare(a[1])).slice(0, 7);
+  html += '<div class="card"><h3>🕘 최근 읽은 단락</h3>' + (recent.length ? '<ul style="list-style:none;padding:0">' + recent.map(([k, v]) => { const q = QUEUE.find(x => x.key === k); return q ? `<li style="display:flex;justify-content:space-between;gap:8px;font-size:.86rem;padding:5px 0;border-top:1px solid var(--border)"><span style="cursor:pointer" onclick="goQueue(${qIndex(q.pi, q.si)});showView('today')">${esc(shortName(q.p))} · ${esc(q.s.title)}</span><span class="muted small">${v}</span></li>` : ''; }).join('') + '</ul>' : '<div class="muted small">아직 없어요. 오늘 한 단락부터!</div>') + '</div>';
+  html += `<div class="card guide"><button class="btn ghost sm" onclick="showView('settings')">⚙️ 테마 · 글자 크기 · 백업 · 초기화는 설정에서</button></div>`;
+  el.innerHTML = html;
+}
+function setTheme(v) { S.theme = v; save(); applyTheme(); }
+function applyTheme() { const h = document.documentElement; if (S.theme === 'auto') h.removeAttribute('data-theme'); else h.setAttribute('data-theme', S.theme); }
+function setFontSize(v) { S.fontSize = v; save(); applyFontSize(); }
+function applyFontSize() { const px = { sm: 14, md: 16, lg: 19 }[S.fontSize] || 16; document.documentElement.style.fontSize = px + 'px'; }
+function setAutoKo(v) { S.autoKo = v; save(); showAllKo = v; renderToday(); }
+function exportData() { $('ioBox').value = JSON.stringify(S); toast('내보내기 완료 · 복사해서 보관하세요'); }
+function copyData() { const v = $('ioBox').value || JSON.stringify(S); $('ioBox').value = v; navigator.clipboard?.writeText(v).then(() => toast('클립보드에 복사했어요')).catch(() => toast('직접 선택해서 복사해 주세요')); }
+function importData() {
+  try { const s = JSON.parse($('ioBox').value); if (!s || s.version !== 2 || typeof s.read !== 'object') throw 0; if (!confirm('현재 데이터를 가져온 데이터로 덮어쓸까요?')) return; S = s; for (const k of ['read', 'days', 'vocab']) if (!S[k]) S[k] = {}; if (!S.theme) S.theme = 'auto'; if (!S.fontSize) S.fontSize = 'md'; if (typeof S.autoKo !== 'boolean') S.autoKo = false; save(); applyTheme(); applyFontSize(); showAllKo = S.autoKo; renderAll(); toast('가져오기 완료'); }
+  catch { toast('올바른 백업 JSON이 아니에요'); }
+}
+
+// ---------- 초기화 (전체 또는 일부만) ----------
+function jumpToFirstUnread() {
+  const nx = nextUnread(0, 0);
+  cur = nx ? { pi: nx.pi, si: nx.si } : { pi: 0, si: 0 };
+  S.cursor = { ...cur };
+}
+function resetPaperProgress(pid) {
+  const p = PAPERS.find(x => x.id === pid); if (!p) return;
+  if (!confirm(`"${p.title}"의 읽기 기록만 초기화할까요?\n단어장과 다른 논문의 기록은 그대로 남습니다.`)) return;
+  for (const sec of p.sections) {
+    const key = p.id + ':' + sec.paragraph_id, d = S.read[key];
+    if (d !== undefined) { delete S.read[key]; if (d && S.days[d]) { S.days[d]--; if (S.days[d] <= 0) delete S.days[d]; } }
+  }
+  jumpToFirstUnread(); flash = null; save(); renderAll(); toast(`"${shortName(p)}" 읽기 기록을 초기화했어요`);
+}
+function resetReadingProgress() {
+  if (!confirm('모든 논문의 읽기 기록과 연속 일수를 초기화할까요?\n단어장은 그대로 남습니다.')) return;
+  S.read = {}; S.days = {}; jumpToFirstUnread(); flash = null; save(); renderAll(); toast('읽기 기록을 초기화했어요');
+}
+function resetVocabOnly() {
+  if (!confirm('단어장 카드를 모두 지울까요?\n읽기 기록은 그대로 남습니다.')) return;
+  S.vocab = {}; save(); renderAll(); toast('단어장을 초기화했어요');
+}
+function resetAll() { if (!confirm('읽기 기록·단어장·연속 일수를 모두 지울까요? 되돌릴 수 없습니다.')) return; localStorage.removeItem(STORE_KEY); localStorage.removeItem('paper_progress'); S = defaultState(); cur = { pi: 0, si: 0 }; flash = null; showAllKo = S.autoKo; applyTheme(); applyFontSize(); renderAll(); toast('초기화했어요'); }
+
+// ---------- 설정 ----------
+function renderSettings() {
+  const el = $('view-settings'); if (!el) return;
+  let html = `<div class="row" style="margin-bottom:12px"><button class="btn ghost sm" onclick="showView('today')">← 뒤로</button></div>`;
+  html += `<div class="card guide" style="margin-bottom:12px"><strong>⚙️ 설정</strong> · 화면, 읽기 방식, 데이터를 여기서 관리합니다.</div>`;
+
+  html += `<div class="card settings"><h3>🎨 화면</h3>
+    <label>테마</label>
+    <select onchange="setTheme(this.value)">
+      <option value="auto" ${S.theme === 'auto' ? 'selected' : ''}>시스템 설정 따르기</option>
+      <option value="light" ${S.theme === 'light' ? 'selected' : ''}>라이트</option>
+      <option value="dark" ${S.theme === 'dark' ? 'selected' : ''}>다크</option>
+    </select>
+    <label>글자 크기</label>
+    <select onchange="setFontSize(this.value)">
+      <option value="sm" ${S.fontSize === 'sm' ? 'selected' : ''}>작게</option>
+      <option value="md" ${S.fontSize === 'md' ? 'selected' : ''}>보통</option>
+      <option value="lg" ${S.fontSize === 'lg' ? 'selected' : ''}>크게</option>
+    </select>
+  </div>`;
+
+  html += `<div class="card settings"><h3>📖 읽기 방식</h3>
+    <label class="chk"><input type="checkbox" ${S.autoKo ? 'checked' : ''} onchange="setAutoKo(this.checked)"> 단락을 열 때 해석 자동으로 펼치기</label>
+    <div class="muted small">꺼두면 원문 문장을 직접 눌러야 해석이 보입니다. 스스로 먼저 해석해보고 싶다면 꺼두는 걸 추천해요.</div>
+  </div>`;
+
+  html += `<div class="card settings"><h3>💾 데이터 관리</h3>
+    <div class="muted small">읽은 단락 ${readCount()}개 · 단어장 ${Object.keys(S.vocab).length}개 · 이 브라우저에만 저장됩니다.</div>
+    <label>백업 · 복원</label>
+    <textarea id="ioBox" placeholder="'내보내기'를 누르면 여기에 JSON이 나타납니다. 다른 기기에서 붙여넣고 '가져오기'를 누르세요."></textarea>
+    <div class="row"><button class="btn ghost sm" onclick="exportData()">내보내기</button><button class="btn ghost sm" onclick="copyData()">복사</button><button class="btn ghost sm" onclick="importData()">가져오기</button></div>
+  </div>`;
+
+  html += `<div class="card settings"><h3>🗑️ 초기화</h3>
+    <label>논문 하나만 초기화</label>
+    <div class="row">
+      <select id="resetPaperSel" style="flex:1">${PAPERS.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('')}</select>
+      <button class="btn ghost sm" onclick="resetPaperProgress($('resetPaperSel').value)">이 논문만</button>
+    </div>
+    <div class="row" style="margin-top:16px;flex-wrap:wrap">
+      <button class="btn ghost sm" onclick="resetReadingProgress()">읽기 기록 전체 초기화</button>
+      <button class="btn ghost sm" onclick="resetVocabOnly()">단어장만 초기화</button>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <span class="muted small" style="flex:1;align-self:center">아래는 모든 데이터를 되돌릴 수 없이 지웁니다.</span>
+      <button class="btn danger sm" onclick="resetAll()">전체 초기화</button>
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+// ---------- 단어장 ----------
+let vocabSession = null, vocabQuery = '';
+function toggleVocab(t, desc, pid) {
+  if (S.vocab[t]) { delete S.vocab[t]; toast('단어장에서 뺐어요'); }
+  else { S.vocab[t] = { desc, paper: pid, added: today(), box: 1, due: today(), seen: 0 }; toast('단어장에 넣었어요'); }
+  save(); renderAll();
+}
+function renderVocab() {
+  const el = $('view-vocab');
+  if (vocabSession) return renderFlash(el);
+  const terms = Object.keys(S.vocab), due = dueCards();
+  let html = `<div class="tiles" style="grid-template-columns:repeat(3,1fr)"><div class="tile"><div class="v">${terms.length}</div><div class="l">전체 카드</div></div><div class="tile"><div class="v">${due.length}</div><div class="l">오늘 복습</div></div><div class="tile"><div class="v">${terms.filter(t => S.vocab[t].box >= 4).length}</div><div class="l">익힌 카드</div></div></div>`;
+  html += `<div class="actions" style="margin:0 0 12px"><button class="btn primary" ${due.length ? '' : 'disabled'} onclick="startFlash('due')">🃏 오늘 복습 시작 (${due.length})</button><button class="btn ghost" ${terms.length ? '' : 'disabled'} onclick="startFlash('all')">전체 섞어서 복습</button></div>`;
+  html += `<input class="search" placeholder="용어 검색" value="${esc(vocabQuery)}" oninput="vocabQuery=this.value;renderVocabList()">`;
+  html += `<div class="card" id="vocabList"></div>`;
+  html += `<div class="card"><h3>➕ 직접 추가</h3><div class="form-row"><input id="vTerm" placeholder="용어 (예: ablation study)"><input id="vDesc" placeholder="뜻 · 설명"><button class="btn ghost sm" onclick="addVocabManual()">추가</button></div></div>`;
+  html += `<div class="card guide"><strong>복습 방식</strong> · 카드를 뒤집어 뜻을 확인하고 "알아요/모르겠어요"를 고르세요. 아는 카드는 1일 → 3일 → 7일 → 14일로 간격이 늘고, 모르는 카드는 내일 다시 나옵니다. 단락을 읽으면 그 단락의 핵심 개념이 자동으로 들어옵니다.</div>`;
+  el.innerHTML = html; renderVocabList();
+}
+function renderVocabList() {
+  const box = $('vocabList'); if (!box) return;
+  const q = vocabQuery.trim().toLowerCase();
+  const terms = Object.keys(S.vocab).filter(t => !q || t.toLowerCase().includes(q) || (S.vocab[t].desc || '').toLowerCase().includes(q)).sort((a, b) => (S.vocab[a].due || '').localeCompare(S.vocab[b].due || '') || a.localeCompare(b));
+  if (!terms.length) { box.innerHTML = '<div class="empty">' + (q ? '검색 결과가 없어요' : '아직 카드가 없어요. 단락을 읽으면 핵심 개념이 자동으로 쌓입니다.') + '</div>'; return; }
+  box.innerHTML = terms.map(t => { const v = S.vocab[t], p = PAPERS.find(x => x.id === v.paper); const dueTxt = (v.due || '') <= today() ? '오늘 복습' : v.due + ' 복습'; return `<div class="vitem"><div style="flex:1"><div class="t">${esc(t)} <span class="box b${v.box || 1}">${v.box >= 4 ? '익힘' : '상자 ' + (v.box || 1)}</span></div><div class="d">${esc(v.desc)}</div><div class="meta">${p ? esc(shortName(p)) + ' · ' : ''}${dueTxt}</div></div><button class="del" title="삭제" data-act="vocab-del" data-term="${esc(t)}">✕</button></div>`; }).join('');
+}
+function delVocab(t) { delete S.vocab[t]; save(); renderVocab(); }
+function addVocabManual() { const t = $('vTerm').value.trim(), d = $('vDesc').value.trim(); if (!t || !d) return toast('용어와 뜻을 모두 적어주세요'); S.vocab[t] = { desc: d, paper: '', added: today(), box: 1, due: today(), seen: 0 }; save(); renderVocab(); toast('추가했어요'); }
+function startFlash(mode) {
+  let cards = mode === 'due' ? dueCards() : Object.keys(S.vocab);
+  cards.sort((a, b) => (S.vocab[a].box || 1) - (S.vocab[b].box || 1) || Math.random() - .5);
+  vocabSession = { cards, i: 0, flipped: false, known: 0, unknown: 0 }; renderVocab(); window.scrollTo({ top: 0 });
+}
+function renderFlash(el) {
+  const ss = vocabSession;
+  if (ss.i >= ss.cards.length) { el.innerHTML = `<div class="card done-card"><div class="big">🎯</div><h3>복습 완료</h3><p>${ss.cards.length}장 · 알아요 ${ss.known} · 모르겠어요 ${ss.unknown}</p><div class="actions" style="margin:0"><button class="btn primary" onclick="vocabSession=null;renderVocab()">단어장으로</button></div></div>`; return; }
+  const t = ss.cards[ss.i], v = S.vocab[t]; if (!v) { ss.i++; return renderFlash(el); }
+  const p = PAPERS.find(x => x.id === v.paper);
+  el.innerHTML = `<div class="muted small" style="display:flex;justify-content:space-between;margin-bottom:8px"><span>${ss.i + 1} / ${ss.cards.length}</span><button class="linkbtn" onclick="vocabSession=null;renderVocab()">그만하기</button></div>
+    <div class="card flash" onclick="flipCard()"><span class="term">${esc(t)}</span>${ss.flipped ? `<div class="ans">${esc(v.desc)}</div>` : ''}<div class="src">${p ? esc(shortName(p)) : '직접 추가'} · <span class="box b${v.box || 1}">상자 ${v.box || 1}</span></div>${ss.flipped ? '' : '<div class="tap">눌러서 뜻 확인</div>'}</div>
+    ${ss.flipped ? `<div class="actions"><button class="btn ghost" onclick="grade(false)">😅 모르겠어요</button><button class="btn primary" onclick="grade(true)">😀 알아요</button></div>` : '<div class="actions"><button class="btn ghost" onclick="flipCard()">뒤집기</button></div>'}`;
+}
+function flipCard() { vocabSession.flipped = !vocabSession.flipped; renderVocab(); }
+function grade(ok) {
+  const ss = vocabSession, t = ss.cards[ss.i], v = S.vocab[t];
+  if (v) { v.seen = (v.seen || 0) + 1; if (ok) { v.box = Math.min(4, (v.box || 1) + 1); ss.known++; } else { v.box = 1; ss.unknown++; } v.due = addDays(today(), INTERVALS[v.box - 1]); }
+  ss.i++; ss.flipped = false; save(); renderVocab();
+}
+
+// ---------- 용어 사전 ----------
+let glossaryQuery = '';
+function renderGlossary() {
+  const el = $('view-glossary');
+  let html = `<div class="card guide" style="margin-bottom:12px"><strong>📘 왕초보 용어 사전</strong> · "RNN이 뭐지", "파라미터가 뭐지" 싶을 때 여기서 찾아보세요. 중학생도 이해할 수 있게 비유로 설명했습니다. 핵심 개념 카드의 📘 버튼을 누르면 그 자리에서 바로 펼쳐볼 수도 있어요.</div>`;
+  html += `<input class="search" placeholder="용어 검색 (예: RNN, 학습, 파라미터)" value="${esc(glossaryQuery)}" oninput="glossaryQuery=this.value;renderGlossaryList()">`;
+  html += `<div id="glossaryList"></div>`;
+  el.innerHTML = html;
+  renderGlossaryList();
+}
+function renderGlossaryList() {
+  const box = $('glossaryList'); if (!box) return;
+  const q = glossaryQuery.trim().toLowerCase();
+  const cats = [['basic', '🧠 아주 기초'], ['train', '📈 학습은 어떻게 되나'], ['struct', '🧩 논문에 자주 나오는 구조']];
+  let html = '';
+  for (const [key, label] of cats) {
+    const items = GLOSSARY.filter(g => g.cat === key && (!q || g.term.toLowerCase().includes(q) || g.desc.toLowerCase().includes(q) || g.alias.some(a => a.toLowerCase().includes(q))));
+    if (!items.length) continue;
+    html += `<div class="card"><h3>${label}</h3>` + items.map(g => `<div class="gloss-item"><div class="gt">${esc(g.term)}</div><div class="gd">${esc(g.desc)}</div></div>`).join('') + '</div>';
+  }
+  box.innerHTML = html || '<div class="empty">검색 결과가 없어요</div>';
+}
+
+// ---------- 시작 ----------
+applyTheme();
+applyFontSize();
+renderAll();
+</script>
+</body>
+</html>

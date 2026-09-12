@@ -1,0 +1,298 @@
+{
+  "id": "vit",
+  "order": 13,
+  "short": "Vision Transformer",
+  "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+  "authors": "Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai 외 (Google Research)",
+  "year": 2020,
+  "venue": "ICLR 2021",
+  "arxiv": "2010.11929",
+  "url": "https://arxiv.org/abs/2010.11929",
+  "category": "Computer Vision",
+  "category_ko": "이미지를 읽는 Transformer",
+  "why_must_read": "AlexNet과 ResNet이 세운 CNN 왕국에, Attention Is All You Need가 세운 Transformer가 쳐들어가 이긴 사건입니다. 이 논문 이후 컴퓨터 비전과 자연어 처리는 사실상 같은 구조를 씁니다. 지금까지 따로 놀던 CNN 계보와 Attention 계보가 여기서 만납니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": "p001",
+      "fix": {
+        "1": "While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited."
+      },
+      "structure": [
+        "현황: Transformer는 자연어 처리에서 사실상의 표준이 됐지만 컴퓨터 비전에서는 아직 쓰임이 제한적이다",
+        "지금까지의 방식: 비전에서 attention은 CNN과 함께 쓰이거나, CNN 구조를 유지한 채 일부 구성 요소만 대체하는 데 쓰였다",
+        "주장: CNN에 의존할 필요가 없으며, 이미지 패치 시퀀스에 곧바로 적용한 순수 Transformer만으로도 이미지 분류를 아주 잘 해낸다",
+        "성과: 대량의 데이터로 사전학습한 뒤 여러 벤치마크로 옮기면, 최고 성능 CNN에 필적하는 결과를 훨씬 적은 계산 자원으로 낸다"
+      ],
+      "key_concepts": {
+        "de-facto standard": "사실상의 표준. 공식 규정은 아니지만 업계 전체가 실질적으로 따르는 방식을 뜻합니다.",
+        "in conjunction with convolutional networks": "합성곱 신경망과 함께. attention을 CNN에 곁들여 쓰는 기존의 절충적 접근을 가리킵니다.",
+        "pure transformer": "순수 Transformer. CNN을 전혀 섞지 않고 Transformer 구조만으로 이루어졌다는 뜻입니다.",
+        "sequences of image patches": "이미지 패치들의 시퀀스. 사진을 작은 조각(패치)으로 잘라 마치 문장 속 단어들처럼 순서 있는 나열로 취급합니다.",
+        "Vision Transformer (ViT)": "이 논문이 제안하는 모델의 이름. 이미지를 처리하는 Transformer라는 뜻입니다.",
+        "substantially fewer computational resources": "상당히 적은 계산 자원. 성능은 최고 수준이면서 학습 비용은 오히려 낮다는 이중의 장점을 강조합니다."
+      },
+      "summary": "Transformer 구조는 자연어 처리 과제에서 사실상의 표준이 됐지만, 컴퓨터 비전에 대한 적용은 아직 제한적이다. 비전에서 attention은 합성곱 신경망과 함께 쓰이거나, 전체 구조는 유지한 채 그 일부 구성 요소를 대체하는 데 쓰여왔다. 이 논문은 CNN에 대한 이런 의존이 꼭 필요하지 않으며, 이미지 패치들의 시퀀스에 곧바로 적용한 순수 Transformer만으로도 이미지 분류 과제에서 아주 좋은 성능을 낼 수 있음을 보인다. 대량의 데이터로 사전학습한 뒤 여러 중소규모 이미지 인식 벤치마크(ImageNet, CIFAR-100, VTAB 등)로 옮기면, Vision Transformer는 최고 성능의 합성곱 신경망에 필적하는 결과를 내면서도 학습에 드는 계산 자원은 상당히 적다.",
+      "sentences_ko": [
+        {"ko": "Transformer 구조가 자연어 처리 과제에서 사실상의 표준이 된 반면, 컴퓨터 비전에 대한 그 적용은 아직 제한적이다.", "note": "While이 두 분야의 상황을 대비합니다. remain limited가 아직 미완의 영역임을 표시합니다."},
+        {"ko": "비전에서 attention은 합성곱 신경망과 함께 쓰이거나, 전체 구조는 그대로 둔 채 합성곱 신경망의 특정 구성 요소를 대체하는 데 쓰인다.", "note": "either A or B: A이거나 B다. while keeping ~이 후자의 조건을 한정합니다."},
+        {"ko": "우리는 CNN에 대한 이러한 의존이 꼭 필요하지 않으며, 이미지 패치들의 시퀀스에 곧바로 적용한 순수 Transformer가 이미지 분류 과제에서 아주 좋은 성능을 낼 수 있음을 보인다.", "note": "We show that ~: 우리는 ~임을 보인다. is not necessary와 can perform very well 두 주장이 and로 이어집니다."},
+        {"ko": "대량의 데이터로 사전학습한 뒤 여러 중소규모 이미지 인식 벤치마크(ImageNet, CIFAR-100, VTAB 등)로 전이하면, Vision Transformer(ViT)는 최고 성능의 합성곱 신경망과 비교해 뛰어난 결과를 내면서도 학습에 필요한 계산 자원은 상당히 적다.", "note": "while requiring ~이 결과의 우수함과 효율성을 동시에 주장하는 분사구문입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — Transformer의 NLP 정복",
+      "src": "p003",
+      "structure": [
+        "현황: self-attention 기반 구조, 특히 Transformer가 자연어 처리의 선택받은 모델이 됐다",
+        "표준 절차: 큰 텍스트 말뭉치로 사전학습한 뒤 작은 과제별 데이터셋으로 미세조정한다",
+        "규모의 성장: Transformer의 효율성과 확장성 덕분에 1000억 개가 넘는 파라미터를 가진 모델도 학습 가능해졌다",
+        "끝나지 않은 성장: 모델과 데이터셋이 커져도 성능이 포화되는 조짐이 아직 없다"
+      ],
+      "key_concepts": {
+        "self-attention-based architectures": "self-attention을 기반으로 한 구조들. Transformer가 대표적이며, 이 논문이 이미지에 옮기려는 바로 그 구조입니다.",
+        "model of choice": "선택받는 모델. 여러 대안 중 사람들이 가장 먼저 손이 가는 표준적 선택지가 됐다는 뜻입니다.",
+        "pre-train on a large text corpus": "큰 텍스트 말뭉치로 사전학습하다. BERT나 GPT가 확립한 표준 절차입니다.",
+        "unprecedented size": "전례 없는 규모. GPT-3의 1750억 파라미터를 가리키는 표현으로, 이 논문 작성 시점 기준 최신 성과를 인용합니다.",
+        "no sign of saturating performance": "성능이 포화되는 조짐이 없다는 것. 모델을 계속 키워도 계속 좋아진다는, 규모 확장의 지속적 이득을 뜻합니다."
+      },
+      "summary": "self-attention 기반 구조, 특히 Transformer는 자연어 처리에서 선택받는 모델이 됐다. 지배적인 절차는 큰 텍스트 말뭉치로 사전학습한 뒤 더 작은 과제별 데이터셋으로 미세조정하는 것이다. Transformer의 계산 효율성과 확장성 덕분에 1000억 개가 넘는 파라미터를 가진, 전례 없는 규모의 모델을 학습시키는 것도 가능해졌다. 모델과 데이터셋이 계속 커지는데도 성능이 포화되는 조짐은 아직 보이지 않는다.",
+      "sentences_ko": [
+        {"ko": "self-attention 기반 구조, 특히 Transformer는 자연어 처리(NLP)에서 선택받는 모델이 됐다.", "note": "in particular가 대표적인 하위 개념을 콕 집어줍니다. become the model of choice가 표준으로 자리잡았음을 뜻합니다."},
+        {"ko": "지배적인 접근법은 큰 텍스트 말뭉치로 사전학습한 뒤, 더 작은 과제 전용 데이터셋으로 미세조정하는 것이다.", "note": "The dominant approach is to ~: 지배적인 접근법은 ~하는 것이다. BERT 논문이 확립한 절차를 다시 확인합니다."},
+        {"ko": "Transformer의 계산 효율성과 확장성 덕분에, 1000억 개가 넘는 파라미터를 가진 전례 없는 규모의 모델을 학습시키는 것이 가능해졌다.", "note": "Thanks to ~: ~ 덕분에. with over 100B parameters가 그 규모를 구체적 수치로 보여줍니다."},
+        {"ko": "모델과 데이터셋이 계속 커지는데도, 성능이 포화되는 조짐은 여전히 보이지 않는다.", "note": "With A -ing: A가 ~하면서. still no sign of ~가 확장의 이득이 끝나지 않았음을 강조합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — 그러나 비전은 여전히 CNN 왕국",
+      "src": "p004",
+      "structure": [
+        "대비: 그러나 컴퓨터 비전에서는 합성곱 구조가 여전히 지배적이다",
+        "시도들: NLP의 성공에 영감받아 CNN과 self-attention을 결합하려는 여러 연구가 있었다",
+        "극단적 시도: 일부는 convolution을 아예 완전히 대체하려 했다",
+        "그 한계: 이론적으로는 효율적이지만 특수한 attention 패턴 때문에 현대 하드웨어에서 아직 잘 확장되지 못했다",
+        "결론: 그래서 대규모 이미지 인식에서는 여전히 고전적인 ResNet 계열이 최고 성능을 유지한다"
+      ],
+      "key_concepts": {
+        "convolutional architectures": "합성곱 구조. AlexNet, ResNet처럼 필터를 훑어 특징을 뽑는 CNN 계열 전체를 가리킵니다.",
+        "replacing the convolutions entirely": "convolution을 완전히 대체하는 것. CNN을 아예 쓰지 않고 attention만으로 이미지를 처리하려던 이전 시도들입니다.",
+        "scaled effectively on modern hardware accelerators": "현대 하드웨어 가속기에서 효과적으로 확장되다. GPU 등에서 빠르게 돌아갈 수 있는지를 뜻하며, 이론적 효율과 실제 속도는 다른 문제입니다.",
+        "specialized attention patterns": "특수화된 attention 패턴. 이미지에 맞춰 attention 범위를 제한한 복잡한 변형들로, 구현이 까다롭습니다.",
+        "state of the art": "그 시점의 최고 성능. ResNet 계열이 대규모 이미지 인식에서 여전히 이 자리를 지키고 있다는 진단입니다."
+      },
+      "summary": "그러나 컴퓨터 비전에서는 합성곱 구조가 여전히 지배적이다. NLP의 성공에 영감을 받아 여러 연구가 CNN과 유사한 구조를 self-attention과 결합하려 시도했고, 일부는 convolution을 아예 완전히 대체하려 했다. 후자의 모델들은 이론적으로는 효율적이지만, 특수화된 attention 패턴을 쓰기 때문에 현대 하드웨어 가속기에서 아직 효과적으로 확장되지 못했다. 그래서 대규모 이미지 인식에서는 고전적인 ResNet 계열 구조가 여전히 최고 성능을 유지하고 있다.",
+      "sentences_ko": [
+        {"ko": "그러나 컴퓨터 비전에서는 합성곱 구조가 여전히 지배적이다.", "note": "however가 앞 단락의 NLP 성공과 대비를 만듭니다. remain dominant가 아직 지위가 흔들리지 않았음을 뜻합니다."},
+        {"ko": "NLP의 성공에 영감을 받아, 여러 연구가 CNN과 유사한 구조를 self-attention과 결합하려 시도했고, 일부는 convolution을 아예 완전히 대체하려 했다.", "note": "Inspired by ~는 문두 분사구문. some replacing ~이 더 극단적인 시도를 덧붙입니다."},
+        {"ko": "후자의 모델들은 이론적으로는 효율적이지만, 특수화된 attention 패턴을 사용하기 때문에 현대의 하드웨어 가속기에서 아직 효과적으로 확장되지 못했다.", "note": "while theoretically efficient가 삽입된 양보절입니다. due to ~가 그 한계의 원인을 밝힙니다."},
+        {"ko": "따라서 대규모 이미지 인식에서는 고전적인 ResNet 계열 구조가 여전히 최고 성능을 유지하고 있다.", "note": "Therefore가 앞의 두 문제(효율은 좋지만 실제로는 안 빠름)에서 자연스러운 결론으로 이어집니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro3",
+      "title": "1 Introduction — 이미지를 패치로 자르기",
+      "src": "p005",
+      "structure": [
+        "출발점: NLP에서의 Transformer 확장 성공에서 영감을 얻는다",
+        "실험 설계: 표준 Transformer를 가능한 최소한의 수정만으로 이미지에 곧바로 적용한다",
+        "구체적 방법: 이미지를 패치로 나누고, 그 패치들의 선형 임베딩 시퀀스를 Transformer 입력으로 준다",
+        "핵심 비유: 이미지 패치를 NLP의 토큰(단어)과 똑같은 방식으로 다룬다",
+        "학습 방식: 이미지 분류로 지도학습 방식으로 학습시킨다"
+      ],
+      "key_concepts": {
+        "fewest possible modifications": "가능한 한 최소한의 수정. 원래의 Transformer 구조를 최대한 그대로 유지하려 했다는 뜻으로, 이 논문의 실험 설계 철학입니다.",
+        "split an image into patches": "이미지를 패치로 나누다. 예를 들어 224×224 이미지를 16×16 크기의 작은 조각들로 자르는 것이 이 논문 제목의 유래입니다.",
+        "linear embeddings": "선형 임베딩. 각 패치의 픽셀 값들을 하나의 벡터로 펼친 뒤, 학습되는 행렬을 곱해 원하는 차원의 벡터로 바꾼 것입니다.",
+        "tokens (words) in an NLP application": "자연어 처리에서의 토큰(단어). 문장이 단어의 시퀀스이듯, 이 논문은 이미지를 패치의 시퀀스로 취급합니다.",
+        "supervised fashion": "지도학습 방식. 정답 레이블이 있는 데이터로 학습한다는 뜻입니다."
+      },
+      "summary": "NLP에서 Transformer의 규모 확장이 거둔 성공에 영감을 받아, 저자들은 표준 Transformer를 가능한 최소한의 수정만으로 이미지에 곧바로 적용하는 실험을 한다. 이를 위해 이미지를 패치로 나누고, 이 패치들의 선형 임베딩 시퀀스를 Transformer의 입력으로 준다. 이미지 패치는 NLP 응용에서의 토큰(단어)과 정확히 같은 방식으로 취급된다. 모델은 이미지 분류 과제로 지도학습 방식으로 학습된다.",
+      "sentences_ko": [
+        {"ko": "NLP에서 Transformer의 규모 확장이 거둔 성공에 영감을 받아, 우리는 표준 Transformer를 가능한 한 최소한의 수정만으로 이미지에 곧바로 적용하는 실험을 한다.", "note": "Inspired by ~가 문두 분사구문으로 동기를 밝힙니다. with the fewest possible modifications가 실험 설계의 원칙입니다."},
+        {"ko": "이를 위해 우리는 이미지를 패치로 나누고, 이 패치들의 선형 임베딩 시퀀스를 Transformer의 입력으로 제공한다.", "note": "To do so: 이를 위해. provide A as B: A를 B로 제공하다."},
+        {"ko": "이미지 패치는 NLP 응용에서의 토큰(단어)과 정확히 같은 방식으로 취급된다.", "note": "the same way as ~: ~와 똑같은 방식으로. 이 논문의 핵심 발상을 한 문장으로 압축합니다."},
+        {"ko": "우리는 이 모델을 이미지 분류에 대해 지도학습 방식으로 학습시킨다.", "note": "in supervised fashion: 지도학습 방식으로. 학습 방식을 명시하는 짧은 확인 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "modest",
+      "title": "1 Introduction — 처음엔 아쉬운 결과",
+      "src": ["p006", "p008", "p009"],
+      "to": "In particular, the best model reaches the accuracy of 88.55% on ImageNet, 90.72% on ImageNet-ReaL, 94.55% on CIFAR-100, and 77.63% on the VTAB suite of 19 tasks.",
+      "fix": {
+        "2": ["This seemingly discouraging outcome may be expected: Transformers lack some of the inductive biases inherent to CNNs, such as translation equivariance and locality, and therefore do not generalize well when trained on insufficient amounts of data."]
+      },
+      "drop": [3],
+      "structure": [
+        "실망스러운 초기 결과: ImageNet 같은 중간 크기 데이터셋에 강한 정규화 없이 학습시키면 비슷한 크기의 ResNet보다 몇 퍼센트포인트 낮은 정확도를 낸다",
+        "그 이유에 대한 설명: Transformer는 CNN에 내재된 귀납적 편향(이동 등변성, 지역성)이 없어서 데이터가 부족하면 일반화가 잘 안 된다",
+        "반전: 하지만 더 큰 데이터셋(1400만~3억 장)으로 학습시키면 그림이 달라진다",
+        "핵심 발견: 대규모 학습이 귀납적 편향을 이긴다",
+        "결과: ViT는 충분한 규모로 사전학습한 뒤 데이터가 적은 과제로 옮기면 뛰어난 성능을 낸다",
+        "구체적 성적표: ImageNet 88.55%, ImageNet-ReaL 90.72%, CIFAR-100 94.55%, VTAB 77.63%"
+      ],
+      "key_concepts": {
+        "modest accuracies": "그저 그런 정확도. 기대에 못 미치는 결과를 완곡하게 표현한 말입니다.",
+        "inductive bias": "귀납적 편향. 모델 구조 자체에 미리 심어둔 가정으로, 데이터가 적어도 그 가정 덕분에 학습이 잘 되게 도와줍니다. CNN은 '가까운 픽셀끼리 관련 있다'는 가정을 구조에 내장하고 있습니다.",
+        "translation equivariance": "이동 등변성. 사진 속 물체가 왼쪽으로 한 칸 움직이면 특징 지도의 결과도 똑같이 한 칸 움직이는 CNN의 성질입니다.",
+        "locality": "지역성. 필터가 이미지의 작은 영역만 보고 계산하는 CNN의 구조적 가정입니다.",
+        "generalize well": "잘 일반화한다. 학습에 쓰지 않은 새 데이터에서도 성능이 유지된다는 뜻입니다.",
+        "large scale training trumps inductive bias": "대규모 학습이 귀납적 편향을 이긴다. 이 논문 전체의 핵심 발견을 한 문장으로 압축한 표현입니다. 데이터가 충분히 많으면 미리 심어둔 가정이 없어도 스스로 배워낸다는 뜻입니다.",
+        "ImageNet-21k / JFT-300M": "각각 2만1천 개 범주, 3억 장 규모의 초대형 이미지 데이터셋. ViT가 진가를 발휘하려면 이 정도 규모가 필요합니다."
+      },
+      "summary": "강한 정규화 없이 ImageNet 같은 중간 크기 데이터셋으로 학습시키면, 이 모델들은 비슷한 크기의 ResNet보다 몇 퍼센트포인트 낮은 그저 그런 정확도를 낸다. 이 언뜻 실망스러운 결과는 예상할 만한데, Transformer에는 이동 등변성이나 지역성처럼 CNN에 내재된 귀납적 편향이 없어서 데이터가 충분하지 않으면 일반화가 잘 안 되기 때문이다. 그러나 더 큰 데이터셋(1400만에서 3억 장)으로 학습시키면 그림이 달라진다. 대규모 학습이 귀납적 편향을 이긴다는 것이 이 논문의 발견이다. Vision Transformer는 충분한 규모로 사전학습된 뒤 데이터포인트가 적은 과제로 옮겨졌을 때 뛰어난 결과를 낸다. 공개된 ImageNet-21k나 자체 보유한 JFT-300M 데이터셋으로 사전학습하면, ViT는 여러 이미지 인식 벤치마크에서 최고 성능에 근접하거나 이를 넘어선다. 특히 가장 좋은 모델은 ImageNet에서 88.55%, ImageNet-ReaL에서 90.72%, CIFAR-100에서 94.55%, 19개 과제로 이루어진 VTAB에서 77.63%의 정확도에 도달한다.",
+      "sentences_ko": [
+        {"ko": "강한 정규화 없이 ImageNet 같은 중간 크기 데이터셋으로 학습시키면, 이 모델들은 비슷한 크기의 ResNet보다 몇 퍼센트포인트 낮은, 그저 그런 정확도를 낸다.", "note": "When trained on ~은 조건을 나타내는 분사구문. a few percentage points below ~가 부족한 정도를 구체적으로 밝힙니다."},
+        {"ko": "이 언뜻 실망스러운 결과는 예상할 만한 것일 수 있다. Transformer에는 이동 등변성이나 지역성처럼 CNN에 내재된 귀납적 편향 일부가 없어서, 데이터가 충분하지 않은 양으로 학습되면 일반화가 잘 되지 않는 것이다.", "note": "may be expected: 예상할 만하다. 콜론 뒤가 그 이유를 설명하며, such as ~가 귀납적 편향의 구체적 예시입니다."},
+        {"ko": "그러나 모델이 더 큰 데이터셋(1400만에서 3억 장의 이미지)으로 학습되면 그림이 달라진다.", "note": "However가 앞의 부정적 결과를 뒤집습니다. if절이 조건을 명시합니다."},
+        {"ko": "우리는 대규모 학습이 귀납적 편향을 이긴다는 것을 발견했다.", "note": "trump: 이기다, 우선하다. 이 논문 전체를 한 문장으로 요약하는 핵심 문장입니다."},
+        {"ko": "우리의 Vision Transformer(ViT)는 충분한 규모로 사전학습된 뒤 데이터포인트가 더 적은 과제들로 전이됐을 때 뛰어난 결과를 얻는다.", "note": "attain excellent results: 뛰어난 결과를 얻다. when pre-trained ~ and transferred ~가 그 조건을 명시합니다."},
+        {"ko": "공개된 ImageNet-21k 데이터셋이나 자체 보유한 JFT-300M 데이터셋으로 사전학습하면, ViT는 여러 이미지 인식 벤치마크에서 최고 성능에 근접하거나 이를 넘어선다.", "note": "approaches or beats ~: ~에 근접하거나 이를 넘어서다. 두 데이터셋이 이 성과의 재료임을 명시합니다."},
+        {"ko": "특히 가장 좋은 모델은 ImageNet에서 88.55%, ImageNet-ReaL에서 90.72%, CIFAR-100에서 94.55%, 19개 과제로 이루어진 VTAB 세트에서 77.63%의 정확도에 도달한다.", "note": "In particular가 가장 인상적인 수치를 구체적으로 짚어줍니다."}
+      ]
+    },
+    {
+      "paragraph_id": "method-intro",
+      "title": "3 Method — 원래 Transformer를 최대한 그대로",
+      "src": "p021",
+      "structure": [
+        "설계 원칙: 모델 설계에서 원래의 Transformer를 최대한 가깝게 따른다",
+        "그 이점: 확장 가능한 NLP Transformer 구조와 그 효율적인 구현을 거의 그대로 가져다 쓸 수 있다"
+      ],
+      "key_concepts": {
+        "model design": "모델 설계. 이 논문이 새로운 구조를 발명하는 대신 기존 구조를 재활용하는 방향을 택했음을 보여주는 표현입니다.",
+        "intentionally simple setup": "의도적으로 단순한 설정. 복잡한 변형을 만들지 않고 일부러 원본에 가깝게 유지했다는 뜻입니다.",
+        "out of the box": "포장을 뜯자마자 바로 쓸 수 있는. 별다른 수정 없이 기존 도구를 그대로 재사용할 수 있다는 실용적 표현입니다."
+      },
+      "summary": "모델 설계에서 저자들은 원래의 Transformer를 최대한 가깝게 따른다. 이렇게 의도적으로 단순한 설정을 택한 이점은, 확장 가능한 NLP Transformer 구조와 그 효율적인 구현을 거의 그대로 가져다 쓸 수 있다는 데 있다.",
+      "sentences_ko": [
+        {"ko": "모델 설계에서 우리는 원래의 Transformer를 최대한 가깝게 따른다.", "note": "as closely as possible: 가능한 한 가깝게. 독창적 재설계보다 재사용을 택한 방침을 보여줍니다."},
+        {"ko": "이렇게 의도적으로 단순하게 만든 설정의 한 가지 이점은, 확장 가능한 NLP Transformer 구조와 그 효율적인 구현을 거의 그대로 가져다 쓸 수 있다는 것이다.", "note": "can be used almost out of the box: 거의 그대로 바로 쓸 수 있다. 대시로 삽입된 구가 그 대상을 정확히 짚습니다."}
+      ]
+    },
+    {
+      "paragraph_id": "patches",
+      "title": "3.1 Vision Transformer — 이미지를 패치 시퀀스로",
+      "src": "p023",
+      "structure": [
+        "표준 입력 형태: Transformer는 1차원 토큰 임베딩 시퀀스를 입력으로 받는다",
+        "문제: 이미지는 2차원이다",
+        "해법: 이미지를 펼친 2차원 패치들의 시퀀스로 형태를 바꾼다",
+        "패치 개수 공식: N = HW/P²이며, 이 N이 Transformer의 실질적 입력 시퀀스 길이가 된다",
+        "차원 통일: Transformer는 모든 층에서 잠재 벡터 크기 D를 일정하게 쓰므로, 패치를 펼쳐 학습 가능한 선형 사영으로 D차원에 매핑한다",
+        "이름 붙이기: 이 사영의 출력을 패치 임베딩이라 부른다"
+      ],
+      "key_concepts": {
+        "1D sequence of token embeddings": "1차원 토큰 임베딩 시퀀스. 문장 속 단어들이 한 줄로 늘어선 형태로, Transformer가 원래 받던 입력 형식입니다.",
+        "reshape": "형태를 바꾸다. 데이터의 내용은 그대로 두고 배열 방식만 바꾸는 연산입니다.",
+        "flattened 2D patches": "펼쳐진 2차원 패치들. 예를 들어 16×16 픽셀 조각을 한 줄의 숫자 나열로 펼친 것입니다.",
+        "N = HW/P²": "패치의 개수를 구하는 공식. 이미지 전체 크기를 패치 하나의 크기로 나눈 값이며, 이 값이 곧 문장의 단어 수에 해당하는 시퀀스 길이가 됩니다.",
+        "constant latent vector size D": "모든 층에서 일정하게 유지되는 잠재 벡터 차원. Transformer 구조가 요구하는 조건으로, 모든 입력을 이 크기로 맞춰야 합니다.",
+        "trainable linear projection": "학습 가능한 선형 사영. 가중치 행렬을 곱해 벡터의 차원을 바꾸는 연산으로, 이 행렬 자체가 학습 대상입니다.",
+        "patch embeddings": "패치 임베딩. 각 이미지 패치가 선형 사영을 거쳐 만들어진 D차원 벡터로, 이후 문장의 단어 임베딩과 똑같이 취급됩니다."
+      },
+      "summary": "모델의 개요는 그림 1에 나타나 있다. 표준 Transformer는 입력으로 1차원 토큰 임베딩 시퀀스를 받는다. 2차원 이미지를 다루기 위해, 이미지 x를 펼쳐진 2차원 패치들의 시퀀스로 형태를 바꾼다. 여기서 (H, W)는 원본 이미지의 해상도, C는 채널 수, (P, P)는 각 이미지 패치의 해상도이며, N = HW/P²이 그 결과로 생기는 패치의 개수인데 이것이 Transformer의 실질적인 입력 시퀀스 길이 역할도 한다. Transformer는 모든 층에서 일정한 잠재 벡터 크기 D를 쓰므로, 패치를 펼친 뒤 학습 가능한 선형 사영으로 D차원에 매핑한다. 이 사영의 출력을 패치 임베딩이라 부른다.",
+      "sentences_ko": [
+        {"ko": "모델의 개요는 그림 1에 나타나 있다.", "note": "be depicted in ~: ~에 묘사되어 있다. 그림을 안내하는 짧은 문장입니다."},
+        {"ko": "표준 Transformer는 입력으로 1차원 토큰 임베딩 시퀀스를 받는다.", "note": "receives as input ~: 입력으로 ~를 받는다. 원래 구조의 전제 조건을 확인합니다."},
+        {"ko": "2차원 이미지를 다루기 위해, 우리는 이미지 x ∈ R^(H×W×C)를 펼쳐진 2차원 패치들의 시퀀스 x_p ∈ R^(N×(P²·C))로 형태를 바꾼다. 여기서 (H, W)는 원본 이미지의 해상도, C는 채널 수, (P, P)는 각 이미지 패치의 해상도이며, N = HW/P²은 그 결과로 나오는 패치 개수로, Transformer의 실질적인 입력 시퀀스 길이 역할도 한다.", "note": "To handle ~가 목적을 나타냅니다. where 이하가 수식에 등장한 모든 기호를 한 번에 정의합니다."},
+        {"ko": "Transformer는 모든 층에서 일정한 잠재 벡터 크기 D를 사용하므로, 우리는 패치를 펼친 뒤 학습 가능한 선형 사영을 통해 D차원으로 매핑한다(식 1).", "note": "so가 결과절을 이끕니다. flatten과 map이 순서대로 이루어지는 두 단계입니다."},
+        {"ko": "우리는 이 사영의 출력을 패치 임베딩이라 부른다.", "note": "refer to A as B: A를 B라 부른다. 이후 계속 쓰일 용어를 정의하는 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "class-token",
+      "title": "3.1 Vision Transformer — [class] 토큰",
+      "src": "p024",
+      "structure": [
+        "차용: BERT의 [class] 토큰과 비슷하게, 패치 임베딩 시퀀스 앞에 학습 가능한 임베딩을 하나 덧붙인다",
+        "그 역할: Transformer encoder 출력에서 이 토큰의 상태가 이미지 전체를 대표하는 표현이 된다",
+        "활용: 사전학습과 미세조정 모두에서 이 표현 위에 분류 헤드를 붙인다",
+        "구현 차이: 사전학습 때는 은닉층 하나짜리 MLP, 미세조정 때는 선형 층 하나로 분류 헤드를 구현한다"
+      ],
+      "key_concepts": {
+        "[class] token": "BERT에서 빌려온 특수 토큰. 시퀀스의 맨 앞에 붙는 학습 가능한 벡터로, 이 자리의 최종 출력이 시퀀스 전체를 대표하는 요약 표현이 됩니다.",
+        "prepend": "맨 앞에 붙이다. 시퀀스의 끝이 아니라 시작 부분에 새 요소를 추가한다는 뜻입니다.",
+        "image representation": "이미지 표현. [class] 토큰의 최종 출력 벡터로, 이 이미지가 무엇인지에 대한 모델의 요약된 이해입니다.",
+        "classification head": "분류 헤드. 이미지 표현 벡터를 받아 최종적으로 클래스 확률을 내놓는 마지막 층입니다.",
+        "MLP with one hidden layer": "은닉층 하나짜리 다층 퍼셉트론. 사전학습 때 쓰는, 조금 더 복잡한 분류 헤드입니다.",
+        "single linear layer": "선형 층 하나. 미세조정 때 쓰는 더 단순한 분류 헤드로, 목표 과제에 빠르게 맞추기 위해 가볍게 유지합니다."
+      },
+      "summary": "BERT의 [class] 토큰과 비슷하게, 임베딩된 패치들의 시퀀스 앞에 학습 가능한 임베딩 하나를 덧붙인다. Transformer encoder 출력에서 이 토큰의 상태가 이미지 표현으로 쓰인다. 사전학습과 미세조정 양쪽 모두에서, 이 표현에 분류 헤드가 붙는다. 이 분류 헤드는 사전학습 시점에는 은닉층 하나짜리 MLP로, 미세조정 시점에는 선형 층 하나로 구현된다.",
+      "sentences_ko": [
+        {"ko": "BERT의 [class] 토큰과 비슷하게, 우리는 임베딩된 패치들의 시퀀스 앞에 학습 가능한 임베딩(z_0^0 = x_class)을 덧붙이는데, Transformer encoder 출력에서 이 토큰의 상태(z_L^0)가 이미지 표현 y로 쓰인다(식 4).", "note": "Similar to ~: ~와 비슷하게. whose state ~ serves as ~가 z_0^0을 받는 관계절로 그 용도를 설명합니다."},
+        {"ko": "사전학습과 미세조정 양쪽 모두에서, 분류 헤드가 z_L^0에 붙는다. 분류 헤드는 사전학습 시점에는 은닉층 하나짜리 MLP로 구현되고, 미세조정 시점에는 선형 층 하나로 구현된다.", "note": "Both during A and B: A와 B 양쪽 모두에서. at pre-training time과 at fine-tuning time이 두 구현을 각각 시점별로 대응시킵니다."}
+      ]
+    },
+    {
+      "paragraph_id": "inductive-bias",
+      "title": "3.1 Vision Transformer — 귀납적 편향이 적다는 것",
+      "src": "p028",
+      "structure": [
+        "핵심 관찰: ViT는 CNN보다 이미지 특유의 귀납적 편향이 훨씬 적다",
+        "CNN의 경우: 지역성, 2차원 이웃 구조, 이동 등변성이 모델 전체의 모든 층에 박혀 있다",
+        "ViT의 경우: MLP 층만 지역적이고 이동 등변적이며, self-attention 층은 전역적이다",
+        "2차원 구조가 쓰이는 두 곳뿐: 맨 처음 이미지를 패치로 자를 때와, 미세조정 시 해상도가 다른 이미지에 맞춰 위치 임베딩을 조정할 때",
+        "나머지는 전부 학습에 맡김: 초기화 시점의 위치 임베딩은 패치의 2차원 위치 정보를 전혀 담고 있지 않고, 패치 사이의 모든 공간적 관계는 처음부터 학습돼야 한다"
+      ],
+      "key_concepts": {
+        "image-specific inductive bias": "이미지에 특화된 귀납적 편향. CNN이 구조적으로 미리 갖고 있는, 이미지에 대한 가정들을 가리킵니다.",
+        "baked into each layer": "각 층에 박혀 있다. 모델을 설계할 때부터 구조 자체에 내장되어 있어 따로 배울 필요가 없다는 뜻입니다.",
+        "MLP layers are local and translationally equivariant": "MLP 층은 지역적이고 이동 등변적이다. ViT에서 유일하게 CNN과 비슷한 성질을 가진 부분입니다.",
+        "self-attention layers are global": "self-attention 층은 전역적이다. 모든 패치가 서로를 다 들여다볼 수 있어, CNN의 국소적 시야와 정반대되는 성질입니다.",
+        "cutting the image into patches": "이미지를 패치로 자르는 것. ViT에 남아 있는 몇 안 되는 이미지 특화 설계 중 하나입니다.",
+        "learned from scratch": "처음부터 학습된다. 미리 심어둔 지식 없이 순전히 데이터를 보고 스스로 익혀야 한다는 뜻입니다."
+      },
+      "summary": "귀납적 편향. Vision Transformer는 CNN보다 이미지 특유의 귀납적 편향이 훨씬 적다는 점에 주목해야 한다. CNN에서는 지역성, 2차원 이웃 구조, 이동 등변성이 모델 전체에 걸쳐 모든 층에 박혀 있다. ViT에서는 오직 MLP 층만 지역적이고 이동 등변적이며, self-attention 층은 전역적이다. 2차원 이웃 구조는 아주 드물게만 쓰이는데, 모델 맨 처음에 이미지를 패치로 자를 때와, 미세조정 시점에 다른 해상도의 이미지에 맞춰 위치 임베딩을 조정할 때뿐이다(뒤에서 설명한다). 그 밖에는 초기화 시점의 위치 임베딩이 패치의 2차원 위치에 대한 정보를 전혀 담고 있지 않으며, 패치들 사이의 모든 공간적 관계는 처음부터 학습되어야 한다.",
+      "sentences_ko": [
+        {"ko": "귀납적 편향.", "note": "Inductive bias.가 이 문단의 주제를 미리 알리는 소제목입니다."},
+        {"ko": "우리는 Vision Transformer가 CNN보다 이미지에 특화된 귀납적 편향을 훨씬 덜 가진다는 점에 주목한다.", "note": "We note that ~: 우리는 ~에 주목한다. 저자들이 자기 모델의 특징을 스스로 짚어주는 문장입니다."},
+        {"ko": "CNN에서는 지역성, 2차원 이웃 구조, 이동 등변성이 모델 전체에 걸쳐 각 층마다 박혀 있다.", "note": "baked into each layer throughout the whole model: 모델 전체의 각 층에 박혀 있다. 구조 자체에 내장된 가정임을 강조합니다."},
+        {"ko": "ViT에서는 오직 MLP 층만 지역적이고 이동 등변적인 반면, self-attention 층은 전역적이다. 2차원 이웃 구조는 아주 드물게만 사용되는데, 모델의 맨 처음에 이미지를 패치로 자를 때와, 미세조정 시점에 서로 다른 해상도의 이미지에 맞춰 위치 임베딩을 조정할 때(아래에서 설명한다)뿐이다.", "note": "while이 두 종류의 층을 대비합니다. very sparingly가 CNN과의 극명한 차이를 강조합니다."},
+        {"ko": "그 외에는, 초기화 시점의 위치 임베딩은 패치들의 2차원 위치에 대한 어떤 정보도 담고 있지 않으며, 패치들 사이의 모든 공간적 관계는 처음부터 학습되어야 한다.", "note": "Other than that: 그 밖에는. have to be learned from scratch가 CNN과 가장 대조되는 지점을 확정합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "5 Conclusion — 결론",
+      "src": ["p080", "p081"],
+      "structure": [
+        "성취 요약: Transformer를 이미지 인식에 직접 적용하는 것을 탐구했다",
+        "설계 철학 재확인: 최초의 패치 추출 단계를 빼면 이미지 특유의 귀납적 편향을 구조에 넣지 않았다",
+        "대신 한 일: 이미지를 패치의 시퀀스로 해석하고 NLP에서 쓰는 표준 Transformer encoder로 처리했다",
+        "결과: 이 단순하지만 확장 가능한 전략이 대규모 데이터셋 사전학습과 결합되면 놀랍도록 잘 작동한다",
+        "성과: ViT는 여러 이미지 분류 데이터셋에서 최고 성능에 맞먹거나 넘어서면서도 사전학습 비용은 상대적으로 저렴하다",
+        "남은 과제 1: 검출이나 분할 같은 다른 컴퓨터 비전 과제에 ViT를 적용하는 것",
+        "남은 과제 2: 자기지도 사전학습 방법을 계속 탐구하는 것",
+        "현재 상태: 자기지도 사전학습에서 개선을 확인했지만 대규모 지도 사전학습과의 격차는 아직 크다",
+        "전망: ViT를 더 키우면 성능이 더 좋아질 가능성이 높다"
+      ],
+      "key_concepts": {
+        "apart from the initial patch extraction step": "최초의 패치 추출 단계를 제외하면. ViT에 남은 거의 유일한 이미지 특화 설계 요소를 인정하는 표현입니다.",
+        "coupled with pre-training on large datasets": "대규모 데이터셋 사전학습과 결합되면. 이 단순한 전략이 통하는 조건을 명시합니다.",
+        "relatively cheap to pre-train": "사전학습이 상대적으로 저렴하다. 성능은 최고 수준이면서 비용은 낮다는 이 논문의 핵심 강점입니다.",
+        "detection and segmentation": "검출과 분할. 이미지 분류보다 더 어려운 컴퓨터 비전 과제들로, 물체의 위치나 픽셀 단위 영역까지 알아내야 합니다.",
+        "self-supervised pre-training": "자기지도 사전학습. 사람이 붙인 레이블 없이 데이터 자체에서 학습 신호를 만들어내는 방식으로, BERT의 masked LM과 비슷한 발상입니다.",
+        "further scaling of ViT": "ViT를 더 키우는 것. 모델과 데이터를 더 크게 만들면 성능이 계속 좋아질 것이라는 전망입니다."
+      },
+      "summary": "이 논문은 Transformer를 이미지 인식에 직접 적용하는 것을 탐구했다. 컴퓨터 비전에서 self-attention을 쓰던 이전 연구들과 달리, 최초의 패치 추출 단계를 제외하면 이미지 특유의 귀납적 편향을 구조에 넣지 않았다. 대신 이미지를 패치들의 시퀀스로 해석하고, NLP에서 쓰이는 것과 같은 표준 Transformer encoder로 처리한다. 이 단순하지만 확장 가능한 전략은 대규모 데이터셋 사전학습과 결합됐을 때 놀랍도록 잘 작동한다. 그 결과 Vision Transformer는 여러 이미지 분류 데이터셋에서 최고 성능에 맞먹거나 이를 넘어서면서도 사전학습 비용은 상대적으로 저렴하다. 이 초기 결과는 고무적이지만 여전히 많은 과제가 남아 있다. 하나는 검출이나 분할 같은 다른 컴퓨터 비전 과제에 ViT를 적용하는 것이다. 다른 하나는 자기지도 사전학습 방법을 계속 탐구하는 것으로, 초기 실험에서 개선을 확인했지만 자기지도 학습과 대규모 지도 사전학습 사이에는 여전히 큰 격차가 있다. 마지막으로 ViT를 더 키우면 성능이 더 좋아질 가능성이 높다.",
+      "sentences_ko": [
+        {"ko": "우리는 Transformer를 이미지 인식에 직접 적용하는 것을 탐구했다.", "note": "have explored는 현재완료로 이 논문이 한 일을 정리하는 결론부의 표준 시제입니다."},
+        {"ko": "컴퓨터 비전에서 self-attention을 사용한 이전 연구들과 달리, 우리는 최초의 패치 추출 단계를 제외하면 이미지에 특화된 귀납적 편향을 구조에 도입하지 않는다.", "note": "Unlike prior works ~가 대비를 이끕니다. apart from ~이 유일한 예외를 인정합니다."},
+        {"ko": "대신 우리는 이미지를 패치들의 시퀀스로 해석하고, NLP에서 사용되는 것과 같은 표준 Transformer encoder로 그것을 처리한다.", "note": "Instead가 앞 문장의 부정과 대비되는 실제 방법을 제시합니다."},
+        {"ko": "이 단순하지만 확장 가능한 전략은 대규모 데이터셋 사전학습과 결합됐을 때 놀랍도록 잘 작동한다.", "note": "simple, yet scalable: 단순하지만 확장 가능한. when coupled with ~가 성공의 조건을 명시합니다."},
+        {"ko": "따라서 Vision Transformer는 여러 이미지 분류 데이터셋에서 최고 성능에 맞먹거나 이를 넘어서면서도, 사전학습 비용은 상대적으로 저렴하다.", "note": "Thus가 앞의 논증에서 자연스럽게 이어지는 결론을 이끕니다. whilst being ~이 성능과 비용의 두 마리 토끼를 강조합니다."},
+        {"ko": "이 초기 결과들은 고무적이지만, 많은 과제가 여전히 남아 있다.", "note": "While이 양보절을 이끕니다. encouraging과 remain이 성과와 미완의 대비를 만듭니다."},
+        {"ko": "하나는 검출이나 분할 같은 다른 컴퓨터 비전 과제에 ViT를 적용하는 것이다.", "note": "One is to ~: 하나는 ~하는 것이다. such as ~가 구체적 과제의 예시입니다."},
+        {"ko": "우리의 결과는 Carion 등(2020)의 결과와 결합하여, 이 접근법의 가능성을 보여준다.", "note": "coupled with ~: ~와 결합하여. indicate the promise of ~가 확신 있는 결론이 아닌 유망함의 시사임을 밝힙니다."},
+        {"ko": "다른 하나는 자기지도 사전학습 방법을 계속 탐구하는 것이다.", "note": "Another challenge is to ~: 다른 과제는 ~하는 것이다. 앞의 One is와 짝을 이루는 열거 구문입니다."},
+        {"ko": "우리의 초기 실험은 자기지도 사전학습에서 개선을 보여주지만, 자기지도 학습과 대규모 지도 사전학습 사이에는 여전히 큰 격차가 있다.", "note": "but이 성과와 한계를 함께 밝히는 정직한 서술입니다."},
+        {"ko": "마지막으로 ViT를 더 확장하면 아마도 성능이 더 향상될 것이다.", "note": "would likely lead to ~: 아마도 ~로 이어질 것이다. 결론을 미래에 대한 전망으로 마무리합니다."}
+      ]
+    }
+  ]
+}

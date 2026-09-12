@@ -1,0 +1,311 @@
+{
+  "id": "batchnorm",
+  "order": 8,
+  "short": "Batch Normalization",
+  "title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+  "authors": "Sergey Ioffe, Christian Szegedy",
+  "year": 2015,
+  "venue": "ICML 2015",
+  "arxiv": "1502.03167",
+  "url": "https://arxiv.org/abs/1502.03167",
+  "category": "Regularization",
+  "category_ko": "학습 안정화 기법",
+  "why_must_read": "지금 딥러닝 모델 아키텍처 그림마다 한 번씩은 등장하는 'BatchNorm' 층이 어디서 왔는지 알려주는 논문입니다. Dropout이 '무엇을 덜어낼까'로 과적합을 막았다면, 이 논문은 '층 사이를 흐르는 값 자체를 가지런히 정리하자'는 전혀 다른 각도에서 학습을 안정시킵니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": "p003",
+      "structure": [
+        "문제 제기: 깊은 신경망 학습은 각 층 입력의 분포가 학습 중 계속 바뀐다는 사실 때문에 복잡해진다",
+        "그 대가: 학습률을 낮추고 초기화를 조심스럽게 해야 해서 학습이 느려지고, 포화 비선형 함수는 학습시키기 악명 높게 어려워진다",
+        "이름 붙이기: 이 현상을 internal covariate shift라 부르고, 층 입력을 정규화해 해결한다",
+        "방법의 정체: 정규화를 모델 구조의 일부로 만들고 각 미니배치마다 수행한다",
+        "효과 1: 훨씬 높은 학습률을 쓸 수 있고 초기화에 덜 신경 써도 된다",
+        "효과 2: 정규화 역할도 해서 경우에 따라 Dropout이 필요 없어진다",
+        "성과: 최고 성능 이미지 분류 모델에 적용해 학습 스텝을 14분의 1로 줄이면서 정확도도 넘어섰다",
+        "정점: 앙상블로 ImageNet 최고 기록을 갱신해 사람의 정확도까지 넘어섰다"
+      ],
+      "key_concepts": {
+        "distribution of each layer's inputs": "각 층에 들어오는 입력값들의 분포. 학습 중 앞선 층의 가중치가 바뀌면 이 분포도 계속 흔들립니다.",
+        "internal covariate shift": "내부 공변량 변화. 학습이 진행되면서 신경망 내부 각 층이 보는 입력 분포가 계속 바뀌는 현상을 가리키는 이 논문의 핵심 용어입니다.",
+        "saturating nonlinearity": "포화 비선형 함수. 시그모이드처럼 입력이 크면 출력이 눌려 기울기가 거의 사라지는 활성화 함수로, 입력 분포가 흔들리면 자꾸 이 포화 영역에 빠집니다.",
+        "normalizing layer inputs": "층 입력을 정규화하는 것. 평균을 0, 분산을 1 근처로 맞춰 값의 범위를 가지런히 만드는 조치입니다.",
+        "mini-batch": "한 번의 학습 스텝에 쓰는 데이터 묶음. Batch Normalization은 이 묶음 단위로 통계를 내 정규화합니다.",
+        "regularizer": "정규화 기법(과적합 방지 장치). 이 논문은 Batch Normalization이 원래 목적(내부 분포 안정화) 외에 덤으로 이 역할도 한다고 밝힙니다.",
+        "14 times fewer training steps": "학습 스텝이 14분의 1로 줄었다는 뜻. 같은 성능에 훨씬 빨리 도달했다는 강력한 실용적 근거입니다."
+      },
+      "summary": "깊은 신경망 학습은 각 층 입력의 분포가 앞선 층의 파라미터 변화에 따라 학습 중 계속 바뀐다는 사실 때문에 복잡해진다. 이 때문에 학습률을 낮추고 초기화를 조심스럽게 해야 해서 학습이 느려지고, 포화 비선형 함수를 쓰는 모델은 악명 높게 학습시키기 어려워진다. 저자들은 이 현상을 internal covariate shift라 부르고, 층 입력을 정규화해 문제를 해결한다. 이 방법의 힘은 정규화를 모델 구조의 일부로 만들고 각 학습 미니배치마다 정규화를 수행한다는 데서 나온다. Batch Normalization 덕분에 훨씬 높은 학습률을 쓸 수 있고 초기화에 덜 신경 써도 되며, 정규화 효과까지 있어 경우에 따라 Dropout이 필요 없어진다. 최고 성능 이미지 분류 모델에 적용한 결과 학습 스텝을 14분의 1로 줄이면서도 기존 모델을 상당한 차이로 넘어섰고, Batch Normalization으로 학습한 신경망들의 앙상블로 ImageNet 분류의 최고 기록을 갱신해 top-5 검증 오류율 4.9%로 사람 평가자의 정확도까지 넘어섰다.",
+      "sentences_ko": [
+        {"ko": "깊은 신경망을 학습시키는 일은, 앞선 층들의 파라미터가 바뀌면서 각 층 입력의 분포가 학습 중 계속 바뀐다는 사실 때문에 복잡해진다.", "note": "be complicated by the fact that ~: ~라는 사실 때문에 복잡해지다. as절이 그 변화가 일어나는 이유를 덧붙입니다."},
+        {"ko": "이는 더 낮은 학습률과 신중한 파라미터 초기화를 요구해서 학습을 늦추고, 포화 비선형 함수를 가진 모델을 학습시키기 악명 높게 어렵게 만든다.", "note": "by requiring ~는 방법을 나타내는 분사구문. makes it notoriously hard to ~에서 it은 가목적어입니다."},
+        {"ko": "우리는 이 현상을 internal covariate shift라 부르고, 층 입력을 정규화함으로써 이 문제를 다룬다.", "note": "refer to A as B: A를 B라 부르다. address the problem by -ing가 해결 방법을 나타냅니다."},
+        {"ko": "우리 방법의 힘은 정규화를 모델 구조의 일부로 만들고, 각 학습 미니배치마다 정규화를 수행하는 데서 나온다.", "note": "draw strength from -ing: ~하는 데서 힘을 얻다. making과 performing 두 동명사가 and로 병렬 연결됩니다."},
+        {"ko": "Batch Normalization은 우리가 훨씬 더 높은 학습률을 사용하고 초기화에 덜 신경 쓸 수 있게 해준다.", "note": "allow us to ~: 우리가 ~할 수 있게 해준다. much higher와 less careful이 두 가지 실용적 이득을 보여줍니다."},
+        {"ko": "그것은 또한 정규화 장치 역할도 하는데, 어떤 경우에는 Dropout의 필요성을 없애기도 한다.", "note": "act as a regularizer: 정규화 장치로 작용하다. in some cases가 조건을 한정하는 신중한 표현입니다."},
+        {"ko": "최고 성능 이미지 분류 모델에 적용했을 때, Batch Normalization은 학습 스텝을 14분의 1만 쓰고도 같은 정확도에 도달했고, 원래 모델을 상당한 차이로 앞섰다.", "note": "Applied to ~가 문두 분사구문. beats ~ by a significant margin이 차이의 크기를 강조합니다."},
+        {"ko": "Batch Normalization으로 학습한 신경망들의 앙상블을 사용해, 우리는 ImageNet 분류에서 이제까지 발표된 최고 결과를 넘어섰다. top-5 검증 오류율 4.9%(테스트 오류율 4.8%)에 도달해 사람 평가자의 정확도까지 뛰어넘은 것이다.", "note": "improve upon ~: ~를 개선하다, 넘어서다. 콜론 뒤가 구체적 수치로 그 개선을 증명합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — SGD와 미니배치",
+      "src": "p005",
+      "to": "SGD optimizes the parameters Θ of the network, so as to minimize the loss",
+      "structure": [
+        "배경: 딥러닝이 비전, 음성 등 여러 분야의 최신 성능을 극적으로 끌어올렸다",
+        "표준 도구: SGD가 깊은 신경망을 학습시키는 효과적인 방법으로 입증됐다",
+        "발전형: 모멘텀, Adagrad 같은 SGD 변형이 최고 성능을 내는 데 쓰였다",
+        "목표 명시: SGD는 손실을 최소화하도록 신경망 파라미터를 최적화한다"
+      ],
+      "key_concepts": {
+        "state of the art": "그 시점에서 가장 성능이 좋은 방법. 딥러닝이 여러 분야에서 이 기준을 계속 갱신해왔다는 뜻입니다.",
+        "Stochastic Gradient Descent (SGD)": "전체 데이터가 아니라 일부만 보고 기울기를 계산해 파라미터를 갱신하는 학습 방법. 깊은 신경망 학습의 기본 도구입니다.",
+        "momentum": "이전 갱신 방향을 어느 정도 이어받아 학습을 가속하는 SGD의 변형 기법. 관성처럼 같은 방향으로 계속 밀어붙이는 효과를 냅니다.",
+        "Adagrad": "파라미터마다 다른 학습률을 자동으로 정해주는 SGD 변형. Adam의 조상격 되는 방법입니다.",
+        "loss": "손실. 모델의 예측이 정답과 얼마나 다른지를 나타내는 점수로, 학습은 이 값을 줄이는 방향으로 진행됩니다."
+      },
+      "summary": "딥러닝은 비전, 음성을 비롯한 여러 분야의 최신 성능을 극적으로 끌어올렸다. 확률적 경사 하강법(SGD)은 깊은 신경망을 학습시키는 효과적인 방법으로 입증됐고, 모멘텀이나 Adagrad 같은 SGD의 변형들이 최고 성능을 달성하는 데 쓰여왔다. SGD는 손실을 최소화하도록 신경망의 파라미터를 최적화한다.",
+      "sentences_ko": [
+        {"ko": "딥러닝은 비전, 음성을 비롯한 여러 분야의 최신 성능을 극적으로 끌어올렸다.", "note": "advance the state of the art: 최신 성능을 끌어올리다. dramatically가 그 변화의 크기를 강조합니다."},
+        {"ko": "확률적 경사 하강법(SGD)은 깊은 신경망을 학습시키는 효과적인 방법으로 입증되었고, 모멘텀이나 Adagrad 같은 SGD의 변형들이 최고 성능을 달성하는 데 사용되어 왔다.", "note": "prove to be ~: ~임이 입증되다. such as ~가 SGD 변형의 구체적 예시를 듭니다."},
+        {"ko": "SGD는 손실을 최소화하도록 신경망의 파라미터 Θ를 최적화한다.", "note": "so as to ~: ~하기 위해서. optimize A so as to B는 'A를 B하도록 최적화하다'라는 목적 구문입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — SGD의 대가",
+      "src": "p010",
+      "structure": [
+        "인정: SGD는 단순하고 효과적이지만 하이퍼파라미터를 신중히 조정해야 한다",
+        "특히 중요한 것: 학습률과 파라미터 초기값",
+        "복잡함의 근원: 각 층의 입력이 그 앞의 모든 층의 파라미터에 영향을 받는다",
+        "그 결과: 신경망이 깊어질수록 작은 파라미터 변화가 증폭된다"
+      ],
+      "key_concepts": {
+        "hyper-parameter tuning": "하이퍼파라미터 조정. 학습률, 초기화 방식처럼 학습 전에 사람이 미리 정해야 하는 값들을 잘 맞추는 작업입니다.",
+        "initial values for the model parameters": "모델 파라미터의 초기값. 학습을 시작하기 전 가중치에 부여하는 첫 값으로, 이후 학습 과정 전체에 영향을 줍니다.",
+        "affected by the parameters of all preceding layers": "그 앞의 모든 층의 파라미터에 영향을 받는다는 것. 한 층의 입력이 그 아래 모든 층의 상태에 좌우된다는 연쇄 구조를 가리킵니다.",
+        "amplify as the network becomes deeper": "신경망이 깊어질수록 증폭된다. 작은 변화가 층을 거칠 때마다 누적되어 커지는 현상입니다."
+      },
+      "summary": "확률적 경사 하강법은 단순하고 효과적이지만, 모델 하이퍼파라미터를 신중하게 조정해야 한다. 특히 최적화에 쓰이는 학습률과 모델 파라미터의 초기값이 그렇다. 학습이 복잡해지는 이유는 각 층의 입력이 그 앞의 모든 층의 파라미터에 영향을 받기 때문이며, 그래서 신경망 파라미터의 작은 변화가 신경망이 깊어질수록 증폭된다.",
+      "sentences_ko": [
+        {"ko": "확률적 경사 하강법은 단순하고 효과적이지만, 모델 하이퍼파라미터, 특히 최적화에 사용되는 학습률과 모델 파라미터의 초기값을 신중하게 조정해야 한다.", "note": "While이 양보절을 이끕니다. specifically가 이어지는 두 하이퍼파라미터를 구체적으로 지목합니다."},
+        {"ko": "학습이 복잡해지는 것은 각 층의 입력이 그 앞에 있는 모든 층의 파라미터에 영향을 받는다는 사실 때문이며, 그래서 신경망 파라미터의 작은 변화가 신경망이 깊어질수록 증폭된다.", "note": "so that ~은 결과절. amplify가 작은 변화가 누적되어 커지는 현상을 정확히 표현합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "covariate-shift",
+      "title": "1 Introduction — 공변량 변화라는 개념",
+      "src": "p011",
+      "to": "This is typically handled via domain adaptation (Jiang, 2008).",
+      "structure": [
+        "문제의 핵심: 층 입력 분포가 바뀌면 그 층은 계속 새 분포에 적응해야 한다",
+        "용어 도입: 학습 시스템의 입력 분포가 바뀌는 것을 covariate shift라 부른다",
+        "기존의 대응: 보통 domain adaptation으로 다룬다"
+      ],
+      "key_concepts": {
+        "continuously adapt to the new distribution": "새로운 분포에 계속 적응해야 한다는 것. 층이 배운 것이 자꾸 낡아져서 다시 배워야 하는 낭비가 생깁니다.",
+        "covariate shift": "공변량 변화. 학습에 쓰인 데이터의 입력 분포와 실제 마주치는 입력 분포가 달라지는 통계학의 개념으로, 이 논문은 이를 신경망 내부에도 적용합니다.",
+        "domain adaptation": "영역 적응. 학습 데이터와 실제 데이터의 분포 차이를 보정하는 기존의 기계학습 기법입니다."
+      },
+      "summary": "층 입력 분포의 변화는 문제를 일으키는데, 그 층이 새 분포에 계속 적응해야 하기 때문이다. 학습 시스템에 들어오는 입력 분포가 바뀌는 것을 covariate shift라 부르며, 이는 보통 domain adaptation으로 다뤄진다.",
+      "sentences_ko": [
+        {"ko": "층 입력 분포의 변화는 문제를 일으키는데, 층들이 새로운 분포에 계속 적응해야 하기 때문이다.", "note": "present a problem because ~: ~ 때문에 문제를 일으키다. need to continuously adapt가 부담의 정체를 밝힙니다."},
+        {"ko": "학습 시스템에 대한 입력 분포가 바뀔 때, 그것을 covariate shift를 겪는다고 말한다.", "note": "it is said to ~: ~라고 일컬어진다. 통계학의 기존 용어를 신경망 논의로 끌어오는 문장입니다."},
+        {"ko": "이는 보통 domain adaptation을 통해 다뤄진다.", "note": "be handled via ~: ~를 통해 다뤄지다. typically가 지금까지의 표준적 대응 방식임을 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "sub-network",
+      "title": "1 Introduction — 부분망에도 적용되는 원리",
+      "src": "p011",
+      "from": "However, the notion of covariate shift can be extended beyond the learning system as a whole, to apply to its parts, such as a sub-network or a layer.",
+      "structure": [
+        "확장: covariate shift 개념은 시스템 전체뿐 아니라 부분망이나 층에도 적용될 수 있다",
+        "예시 설정: F1, F2 두 변환으로 이루어진 신경망을 생각한다",
+        "관점의 전환: Θ2를 학습하는 것은 x = F1(u, Θ1)이 부분망 F2에 입력되는 것으로 볼 수 있다",
+        "동등성: 이는 입력 x를 받는 독립된 신경망 F2를 학습시키는 것과 정확히 같다",
+        "함의: 학습과 테스트 데이터의 분포가 같아야 효율적이라는 원리가 부분망 학습에도 그대로 적용된다",
+        "결론: 그러므로 x의 분포가 시간이 지나도 고정되어 있는 것이 유리하다",
+        "부가 효과: 그러면 Θ2가 x 분포의 변화를 보정하려고 다시 조정될 필요가 없다"
+      ],
+      "key_concepts": {
+        "sub-network": "신경망 전체가 아니라 그 안의 일부 층 묶음. 이 논문은 신경망의 각 층도 하나의 독립된 부분망처럼 생각합니다.",
+        "arbitrary transformations F1, F2": "임의의 변환 F1과 F2. 신경망의 앞부분과 뒷부분을 각각 하나의 함수로 추상화한 것입니다.",
+        "as if the inputs x are fed into the sub-network": "입력 x가 부분망에 먹여지는 것처럼. F2 입장에서 보면 F1이 무엇을 하든 상관없이 그저 x라는 입력을 받는 독립된 신경망일 뿐이라는 관점입니다.",
+        "same distribution between training and test data": "학습 데이터와 테스트 데이터가 같은 분포를 가져야 한다는 원칙. 기계학습의 기본 전제이며, 이 논문은 이 원칙을 신경망 내부의 층 사이 관계에도 적용합니다.",
+        "distribution of x remains fixed over time": "x의 분포가 시간이 지나도 고정되어 있는 것. 이것이 이 논문이 추구하는 목표 상태입니다."
+      },
+      "summary": "그러나 covariate shift라는 개념은 학습 시스템 전체를 넘어, 부분망이나 층 같은 그 부분들에도 적용되도록 확장될 수 있다. F1과 F2라는 임의의 변환으로 이루어진 신경망을 생각하고, 파라미터 Θ1과 Θ2를 손실을 최소화하도록 학습한다고 하자. Θ2를 학습하는 것은 x = F1(u, Θ1)이 부분망 F2에 입력되는 것으로 볼 수 있으며, 이는 입력 x를 받는 독립된 신경망 F2를 학습시키는 것과 정확히 같다. 그러므로 학습을 더 효율적으로 만드는 입력 분포의 성질들, 이를테면 학습 데이터와 테스트 데이터가 같은 분포를 갖는다는 것은, 부분망을 학습시키는 데도 그대로 적용된다. 따라서 x의 분포가 시간이 지나도 고정되어 있는 것이 유리하며, 그러면 Θ2가 x 분포의 변화를 보정하려고 다시 조정될 필요가 없다.",
+      "sentences_ko": [
+        {"ko": "그러나 covariate shift라는 개념은 학습 시스템 전체를 넘어서, 부분망이나 층 같은 그 부분들에도 적용되도록 확장될 수 있다.", "note": "can be extended beyond A, to apply to B: A를 넘어 B에도 적용되도록 확장될 수 있다. 이 논문의 핵심 통찰이 담긴 문장입니다."},
+        {"ko": "F1과 F2가 임의의 변환이고, 파라미터 Θ1과 Θ2가 손실 ℓ을 최소화하도록 학습되는 어떤 신경망 계산을 생각해 보자.", "note": "Consider ~: ~을 생각해 보자. so as to minimize ~가 학습의 목표를 나타냅니다."},
+        {"ko": "Θ2를 학습하는 것은, 입력 x = F1(u, Θ1)이 부분망으로 먹여지는 것으로 볼 수 있다. 예를 들어 (배치 크기 m, 학습률 α에 대한) 경사 하강 스텝은, 입력 x를 받는 독립된 신경망 F2에 대한 스텝과 정확히 동일하다.", "note": "can be viewed as if ~: ~인 것처럼 볼 수 있다. is exactly equivalent to ~가 두 관점이 수학적으로 같음을 못박습니다."},
+        {"ko": "따라서 학습을 더 효율적으로 만드는 입력 분포의 성질들, 이를테면 학습 데이터와 테스트 데이터 사이의 분포가 같다는 것은, 부분망을 학습시키는 데도 마찬가지로 적용된다.", "note": "such as ~가 그 성질의 구체적 예시입니다. apply to ~ as well이 부분망에도 원칙이 그대로 통함을 확인합니다."},
+        {"ko": "그러한 만큼 x의 분포가 시간이 지나도 고정되어 있는 것이 유리하다.", "note": "As such: 그러한 만큼. advantageous가 앞의 논증에서 자연스럽게 이어지는 결론입니다."},
+        {"ko": "그러면 Θ2는 x 분포의 변화를 보정하기 위해 다시 조정될 필요가 없다.", "note": "does not have to readjust to compensate for ~: ~를 보정하려고 다시 조정될 필요가 없다. 앞 문장의 유리함이 구체적으로 어떤 이득인지 밝힙니다."}
+      ]
+    },
+    {
+      "paragraph_id": "define",
+      "title": "1 Introduction — Internal Covariate Shift 정의",
+      "src": "p013",
+      "structure": [
+        "정의: 학습 중 깊은 신경망 내부 노드들의 분포가 바뀌는 것을 Internal Covariate Shift라 부른다",
+        "동기: 이를 없애면 학습이 빨라질 것으로 기대된다",
+        "제안: Batch Normalization이라는 새 메커니즘으로 이 문제를 줄이고 학습을 크게 가속한다",
+        "동작 원리: 층 입력의 평균과 분산을 고정하는 정규화 단계로 이를 이뤄낸다",
+        "부가 효과 1: 기울기가 파라미터 크기나 초기값에 덜 의존하게 되어 기울기 흐름에도 도움을 준다",
+        "그 결과: 발산 위험 없이 훨씬 높은 학습률을 쓸 수 있다",
+        "부가 효과 2: 모델을 정규화해 Dropout의 필요성을 줄인다",
+        "부가 효과 3: 포화 비선형 함수도 포화 상태에 갇히지 않게 해서 쓸 수 있게 만든다"
+      ],
+      "key_concepts": {
+        "internal nodes of a deep network": "깊은 신경망 내부의 노드들. 각 층의 뉴런 출력을 가리키며, 학습 중 이 값들의 분포가 계속 흔들립니다.",
+        "Batch Normalization": "이 논문이 제안하는 새 메커니즘의 이름. 미니배치 단위로 층 입력의 평균과 분산을 고정해 내부 분포를 안정시킵니다.",
+        "fixes the means and variances": "평균과 분산을 고정한다. Batch Normalization이 실제로 수행하는 핵심 연산입니다.",
+        "gradient flow": "기울기가 역전파를 통해 층을 거쳐 흐르는 과정. 이것이 원활해야 학습이 잘 됩니다.",
+        "risk of divergence": "발산 위험. 학습률을 너무 높이면 파라미터 값이 안정되지 못하고 튀어버리는 위험입니다.",
+        "getting stuck in the saturated modes": "포화 상태에 갇히는 것. 활성화 함수의 출력이 한쪽 끝에 눌려 기울기가 거의 0이 되는 상태에서 못 빠져나오는 문제입니다."
+      },
+      "summary": "저자들은 학습 과정에서 깊은 신경망 내부 노드들의 분포가 바뀌는 것을 Internal Covariate Shift라 부르며, 이를 없애면 더 빠른 학습을 기대할 수 있다. 이 논문은 Batch Normalization이라 부르는 새 메커니즘을 제안하는데, 이는 internal covariate shift를 줄이는 방향으로 한 걸음 나아가며 그 과정에서 깊은 신경망의 학습을 크게 가속한다. 이는 층 입력의 평균과 분산을 고정하는 정규화 단계를 통해 이루어진다. Batch Normalization은 기울기가 파라미터의 크기나 초기값에 덜 의존하게 만들어 신경망을 흐르는 기울기에도 이로운 효과를 주며, 덕분에 발산 위험 없이 훨씬 높은 학습률을 쓸 수 있다. 더 나아가 배치 정규화는 모델을 정규화해 Dropout의 필요성을 줄이고, 신경망이 포화 상태에 갇히는 것을 막아 포화 비선형 함수도 쓸 수 있게 만든다.",
+      "sentences_ko": [
+        {"ko": "우리는 학습 과정에서 깊은 신경망 내부 노드들의 분포가 바뀌는 것을 Internal Covariate Shift라 부른다.", "note": "refer to A as B: A를 B라 부르다. in the course of training이 시간적 범위를 한정합니다."},
+        {"ko": "이를 없애는 것은 더 빠른 학습이라는 전망을 준다.", "note": "offer a promise of ~: ~라는 전망을 주다. Eliminating it이 동명사 주어입니다."},
+        {"ko": "우리는 Batch Normalization이라 부르는 새로운 메커니즘을 제안하는데, 이는 internal covariate shift를 줄이는 방향으로 한 걸음을 내딛으며, 그렇게 함으로써 깊은 신경망의 학습을 극적으로 가속한다.", "note": "which we call ~가 mechanism을 받는 계속적 관계절. in doing so가 앞의 동작이 곧 이 결과로 이어짐을 표시합니다."},
+        {"ko": "이는 층 입력의 평균과 분산을 고정하는 정규화 단계를 통해 이를 이뤄낸다.", "note": "accomplish A via B: B를 통해 A를 이뤄내다. fixes가 정규화가 하는 구체적 동작입니다."},
+        {"ko": "Batch Normalization은 또한 기울기가 파라미터의 크기나 그 초기값에 의존하는 정도를 줄임으로써, 신경망을 통과하는 기울기 흐름에도 이로운 효과를 준다.", "note": "by reducing ~이 이로운 효과가 생기는 방법을 나타냅니다."},
+        {"ko": "이는 발산의 위험 없이 훨씬 더 높은 학습률을 사용할 수 있게 해준다.", "note": "without the risk of ~: ~의 위험 없이. 앞 문장의 효과가 구체적으로 어떤 이득으로 이어지는지 보여줍니다."},
+        {"ko": "더 나아가 배치 정규화는 모델을 정규화하고 Dropout의 필요성을 줄인다.", "note": "Furthermore가 세 번째 이점을 추가합니다. regularizes와 reduces가 and로 병렬 연결됩니다."},
+        {"ko": "마지막으로 Batch Normalization은 신경망이 포화 상태에 갇히는 것을 막음으로써, 포화 비선형 함수를 사용할 수 있게 만든다.", "note": "makes it possible to ~에서 it은 가목적어. by preventing ~이 그 방법을 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "whitening-target",
+      "title": "2 Towards Reducing ICS — 왜 화이트닝인가",
+      "src": "p016",
+      "structure": [
+        "재정의: Internal Covariate Shift는 학습 중 파라미터 변화로 생기는 활성화값 분포의 변화다",
+        "목표: 학습을 개선하려면 이 변화를 줄여야 한다",
+        "가설: 층 입력 x의 분포를 학습 내내 고정하면 학습 속도가 좋아질 것이다",
+        "이미 알려진 사실: 입력을 화이트닝하면(평균 0, 분산 1로 만들고 상관을 없애면) 수렴이 빨라진다는 것이 오래전부터 알려져 있다",
+        "확장: 각 층이 그 아래 층의 출력을 입력으로 받으므로, 모든 층의 입력을 똑같이 화이트닝하면 좋을 것이다",
+        "결론: 각 층의 입력을 화이트닝하면 internal covariate shift의 악영향을 없애는 방향으로 한 걸음 나아가는 셈이다"
+      ],
+      "key_concepts": {
+        "network activations": "신경망의 활성화값들. 각 층을 통과한 뒤 나오는 출력값을 뜻하며, 다음 층의 입력이 됩니다.",
+        "whitened / whitening": "화이트닝. 데이터를 선형 변환해 평균을 0, 분산을 1로 만들고 서로 다른 차원 사이의 상관관계까지 없애는 통계적 전처리입니다.",
+        "zero means and unit variances": "평균이 0이고 분산이 1인 상태. 화이트닝이 만들어내는 표준적인 데이터 형태입니다.",
+        "decorrelated": "상관관계가 없어진. 서로 다른 특징(차원)들이 통계적으로 독립적이게 된 상태입니다.",
+        "convergence": "수렴. 학습이 진행되면서 손실이 안정된 낮은 값으로 다가가는 것입니다."
+      },
+      "summary": "저자들은 Internal Covariate Shift를 학습 중 신경망 파라미터의 변화 때문에 생기는 활성화값 분포의 변화로 정의한다. 학습을 개선하려면 internal covariate shift를 줄여야 하는데, 학습이 진행되는 동안 층 입력 x의 분포를 고정하면 학습 속도가 좋아질 것으로 기대된다. 신경망 입력을 화이트닝하면, 즉 선형 변환해 평균이 0이고 분산이 1이 되게 하고 상관관계를 없애면 학습 수렴이 더 빨라진다는 것은 오래전부터 알려져 왔다. 각 층은 그 아래 층들이 만들어낸 입력을 관찰하므로, 각 층의 입력에 대해서도 똑같은 화이트닝을 이뤄내는 것이 유리할 것이다. 각 층의 입력을 화이트닝함으로써 internal covariate shift의 악영향을 없애는, 고정된 입력 분포를 달성하는 방향으로 한 걸음 나아가게 된다.",
+      "sentences_ko": [
+        {"ko": "우리는 Internal Covariate Shift를, 학습 중 신경망 파라미터의 변화로 인해 생기는 신경망 활성화값 분포의 변화로 정의한다.", "note": "define A as B: A를 B로 정의한다. due to ~가 변화가 일어나는 원인을 밝힙니다."},
+        {"ko": "학습을 개선하기 위해 우리는 internal covariate shift를 줄이고자 한다.", "note": "seek to ~: ~하고자 하다. 앞 문장의 정의를 받아 이 논문의 목표를 명시합니다."},
+        {"ko": "학습이 진행되는 동안 층 입력 x의 분포를 고정함으로써, 우리는 학습 속도가 개선되기를 기대한다.", "note": "By fixing ~는 방법을 나타내는 분사구문. as the training progresses가 시간의 흐름을 나타냅니다."},
+        {"ko": "신경망 입력이 화이트닝되면, 즉 평균이 0이고 분산이 1이 되도록 선형 변환되고 상관관계가 없어지면, 신경망 학습이 더 빠르게 수렴한다는 것은 오래전부터 알려져 왔다.", "note": "It has been long known that ~: ~라는 것이 오래전부터 알려져 왔다. i.e. 이하가 whitened의 뜻을 정확히 풀어줍니다."},
+        {"ko": "각 층은 그 아래 층들이 만들어내는 입력을 관찰하므로, 각 층의 입력에 대해서도 똑같은 화이트닝을 이뤄내는 것이 유리할 것이다.", "note": "As가 이유절을 이끕니다. it would be advantageous to ~에서 it은 가주어입니다."},
+        {"ko": "각 층의 입력을 화이트닝함으로써, 우리는 internal covariate shift의 악영향을 없앨 고정된 입력 분포를 달성하는 방향으로 한 걸음 나아가게 될 것이다.", "note": "By whitening ~은 방법의 분사구문. take a step towards -ing가 목표를 향해 나아가는 과정임을 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "simplification",
+      "title": "3 Normalization via Mini-Batch Statistics — 두 가지 단순화",
+      "src": "p021",
+      "structure": [
+        "문제 인정: 각 층 입력을 완전히 화이트닝하는 것은 비용이 크고 어디서나 미분 가능하지도 않다",
+        "그래서: 두 가지 필요한 단순화를 둔다",
+        "첫 번째 단순화: 입력과 출력을 한꺼번에 화이트닝하는 대신, 각 스칼라 특징을 독립적으로 정규화한다",
+        "구체적 방법: 평균 0, 분산 1이 되도록 각 차원을 따로 정규화한다",
+        "근거: 이런 정규화는 특징들 사이 상관관계를 없애지 않아도 수렴을 빠르게 한다고 알려져 있다"
+      ],
+      "key_concepts": {
+        "not everywhere differentiable": "어디서나 미분 가능하지는 않다. 완전한 화이트닝 연산은 역전파에 필요한 기울기를 항상 계산할 수 있는 것은 아니라는 실용적 문제입니다.",
+        "normalize each scalar feature independently": "각 스칼라 특징을 독립적으로 정규화한다. 완전한 화이트닝 대신 이 논문이 실제로 택한 절충안입니다.",
+        "d-dimensional input": "d차원 입력. 한 층에 들어오는 벡터가 d개의 성분(특징)으로 이루어져 있다는 뜻입니다.",
+        "expectation and variance computed over the training data set": "학습 데이터셋 전체에서 계산한 기댓값과 분산. 정규화의 기준이 되는 통계량입니다."
+      },
+      "summary": "각 층 입력을 완전히 화이트닝하는 것은 비용이 많이 들고 어디서나 미분 가능하지도 않으므로, 저자들은 두 가지 필요한 단순화를 둔다. 첫 번째는 층 입력과 출력의 특징들을 한꺼번에 화이트닝하는 대신, 각 스칼라 특징을 평균 0, 분산 1이 되도록 독립적으로 정규화하는 것이다. d차원 입력을 가진 층이라면 각 차원을 학습 데이터셋 전체에서 계산한 기댓값과 분산으로 정규화한다. 이런 정규화는 특징들 사이 상관관계를 없애지 않아도 수렴을 빠르게 한다고 알려져 있다.",
+      "sentences_ko": [
+        {"ko": "각 층 입력을 완전히 화이트닝하는 것은 비용이 많이 들고 어디서나 미분 가능하지도 않으므로, 우리는 두 가지 필요한 단순화를 둔다.", "note": "Since가 이유절을 이끕니다. costly and not everywhere differentiable 두 가지 문제가 단순화의 근거입니다."},
+        {"ko": "첫 번째는, 층 입력과 출력의 특징들을 한꺼번에 화이트닝하는 대신, 각 스칼라 특징을 평균 0, 분산 1이 되도록 독립적으로 정규화하는 것이다.", "note": "instead of -ing: ~하는 대신에. jointly와 independently가 정확히 대비됩니다."},
+        {"ko": "d차원 입력 x = (x(1), ..., x(d))를 가진 층에 대해, 우리는 각 차원을 정규화하는데, 여기서 기댓값과 분산은 학습 데이터셋 전체에서 계산된다.", "note": "where 이하가 정규화에 쓰이는 통계량의 출처를 밝힙니다."},
+        {"ko": "(LeCun 등, 1998b)에서 보였듯이, 이러한 정규화는 특징들이 상관관계를 갖지 않게 되지 않아도 수렴을 빠르게 한다.", "note": "As shown in ~: ~에서 보였듯이. even when ~이 완전한 화이트닝이 아니어도 효과가 있음을 확인해줍니다."}
+      ]
+    },
+    {
+      "paragraph_id": "scale-shift",
+      "title": "3 Normalization via Mini-Batch Statistics — γ와 β",
+      "src": ["p022", "p023"],
+      "structure": [
+        "부작용 지적: 단순히 입력을 정규화하면 그 층이 표현할 수 있는 것 자체가 바뀔 수 있다",
+        "구체적 예: 시그모이드 입력을 정규화하면 비선형 함수의 선형 구간에 갇혀버린다",
+        "해법: 정규화 뒤에 넣는 변환이 항등 변환도 표현할 수 있도록 보장한다",
+        "구현: 각 활성화 x(k)마다 값을 늘이고 옮기는 파라미터 γ(k), β(k)를 도입한다",
+        "학습 방식: 이 파라미터들은 원래 모델 파라미터와 함께 학습되며 신경망의 표현력을 되살린다",
+        "극단적 사례로 확인: γ와 β를 원래의 평균·분산으로 설정하면 원래 활성화값을 그대로 복원할 수도 있다"
+      ],
+      "key_concepts": {
+        "what the layer can represent": "그 층이 표현할 수 있는 것. 신경망의 각 층이 만들어낼 수 있는 함수의 범위를 뜻하며, 정규화가 이를 좁혀버릴 위험이 있습니다.",
+        "linear regime of the nonlinearity": "비선형 함수의 선형 구간. 시그모이드의 가운데 부분처럼 거의 직선처럼 보이는 영역으로, 여기 갇히면 비선형성의 힘을 잃습니다.",
+        "represent the identity transform": "항등 변환을 표현할 수 있다는 것. 원하면 정규화를 사실상 '아무것도 안 한 것'처럼 되돌릴 수 있는 능력을 남겨둔다는 뜻입니다.",
+        "scale and shift parameters γ(k), β(k)": "값을 늘이고(γ) 옮기는(β) 학습 가능한 파라미터. 정규화된 값에 각각 곱하고 더해, 신경망이 필요하면 정규화 효과를 스스로 조절할 수 있게 해줍니다.",
+        "restore the representation power": "표현력을 되살린다. 정규화로 잃을 뻔한 신경망의 유연성을 γ, β가 다시 보충해준다는 뜻입니다.",
+        "recover the original activations": "원래의 활성화값을 복원한다. γ와 β를 특정 값으로 두면 정규화 이전 상태로 정확히 되돌릴 수 있다는, 이 설계가 손해를 보지 않는다는 증거입니다."
+      },
+      "summary": "층의 각 입력을 그냥 정규화하기만 하면 그 층이 표현할 수 있는 것 자체가 바뀔 수 있다는 점에 유의해야 한다. 예를 들어 시그모이드의 입력을 정규화하면 비선형 함수의 선형 구간에 갇혀버릴 수 있다. 이를 해결하기 위해 신경망에 삽입되는 변환이 항등 변환도 표현할 수 있도록 보장한다. 이를 위해 각 활성화 x(k)마다 정규화된 값을 늘이고 옮기는 한 쌍의 파라미터 γ(k), β(k)를 도입한다. 이 파라미터들은 원래 모델 파라미터와 함께 학습되며, 신경망의 표현력을 되살려 준다. 실제로 γ(k)를 원래 분산으로, β(k)를 원래 평균으로 설정하면, 만약 그것이 최적이라면 원래의 활성화값을 그대로 복원할 수도 있다.",
+      "sentences_ko": [
+        {"ko": "층의 각 입력을 단순히 정규화하기만 해도 그 층이 표현할 수 있는 것 자체가 바뀔 수 있다는 점에 유의하라.", "note": "Note that ~: ~에 유의하라. 저자들이 자기 방법의 잠재적 부작용을 스스로 짚어주는 문장입니다."},
+        {"ko": "예를 들어 시그모이드의 입력을 정규화하면 그것들이 그 비선형 함수의 선형 구간에 갇히게 될 것이다.", "note": "constrain A to B: A를 B에 가두다. linear regime이 비선형 함수의 약해진 부분을 가리킵니다."},
+        {"ko": "이를 해결하기 위해, 우리는 신경망에 삽입되는 변환이 항등 변환도 표현할 수 있도록 보장한다.", "note": "make sure that ~: ~를 보장하다. To address this가 앞 문제로부터 자연스럽게 해법으로 이어집니다."},
+        {"ko": "이를 이루기 위해, 우리는 각 활성화 x(k)마다 정규화된 값을 늘이고 옮기는 한 쌍의 파라미터 γ(k), β(k)를 도입한다.", "note": "introduce, for each ~, a pair of ~: ~마다 한 쌍의 ~를 도입하다. scale and shift가 γ와 β 각각의 역할입니다."},
+        {"ko": "이 파라미터들은 원래의 모델 파라미터와 함께 학습되며, 신경망의 표현력을 되살려 준다.", "note": "along with ~: ~와 함께. restore가 정규화 때문에 줄어들 뻔한 능력을 되찾아준다는 뜻입니다."},
+        {"ko": "실제로 γ(k) = Var[x(k)], β(k) = E[x(k)]로 설정하면, 만약 그것이 최적의 선택이라면 원래의 활성화값을 그대로 복원할 수도 있다.", "note": "if that were the optimal thing to do는 가정법 과거로, 실제로 그럴 필요가 있을 때 되돌릴 수 있는 안전장치임을 보여줍니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "5 Conclusion — 결론",
+      "src": ["p077", "p078"],
+      "fix": {
+        "2": "It is based on the premise that covariate shift, which is known to complicate the training of machine learning systems, also applies to sub-networks and layers, and removing it from internal activations of the network may aid in training."
+      },
+      "structure": [
+        "성취 요약: 깊은 신경망 학습을 극적으로 가속하는 새 메커니즘을 제시했다",
+        "그 전제: covariate shift가 부분망과 층에도 적용되며, 내부 활성화값에서 이를 없애면 학습에 도움이 된다",
+        "힘의 원천: 활성화값을 정규화하고 그 정규화를 신경망 구조 자체에 포함시킨 것",
+        "그 이점: 어떤 최적화 방법을 쓰든 정규화가 적절히 다뤄지도록 보장한다",
+        "구현 방식: 미니배치마다 정규화를 수행하고 정규화 파라미터로도 기울기를 역전파한다",
+        "비용: 활성화마다 추가 파라미터 두 개만 필요하면서도 신경망의 표현력은 유지된다",
+        "실용적 효과: 포화 비선형 함수도 쓸 수 있고, 높은 학습률에 더 잘 견디며, Dropout이 필요 없어지는 경우가 많다",
+        "실증 성과: 최고 성능 이미지 분류 모델에 그냥 적용만 해도 학습이 크게 빨라진다",
+        "정점: 학습률을 더 높이고 Dropout을 빼는 등 추가 조정을 더하면 훨씬 적은 스텝으로 기존 최고 기록을 넘어선다",
+        "최종 성과: 여러 모델을 결합하면 ImageNet에서 알려진 최고 시스템을 상당한 차이로 앞선다"
+      ],
+      "key_concepts": {
+        "premise": "전제. 이 논문 전체 주장이 딛고 서 있는 출발 가정을 뜻합니다.",
+        "network architecture itself": "신경망 구조 자체. 정규화를 학습 후 덧붙이는 후처리가 아니라 모델 설계 단계부터 포함시켰다는 뜻입니다.",
+        "backpropagate the gradients through the normalization parameters": "정규화 파라미터로도 기울기를 역전파한다. γ, β도 다른 가중치와 똑같이 학습 대상이라는 뜻입니다.",
+        "two extra parameters per activation": "활성화마다 추가 파라미터 두 개. γ와 β를 가리키며, 이 정도의 작은 비용으로 큰 효과를 냈다는 실용적 강조입니다.",
+        "more tolerant to increased training rates": "높아진 학습률을 더 잘 견딘다는 것. 다른 방법이었다면 발산했을 큰 학습률에서도 안정적으로 학습된다는 뜻입니다.",
+        "single-network image classification": "단일 신경망 이미지 분류. 앙상블 없이 신경망 하나만으로 낸 성능을 가리키며, 이 기준에서도 최고 기록을 넘어섰다는 것이 강한 주장입니다."
+      },
+      "summary": "이 논문은 깊은 신경망의 학습을 극적으로 가속하는 새로운 메커니즘을 제시했다. 이는 학습 시스템 전체를 복잡하게 만든다고 알려진 covariate shift가 부분망과 층에도 똑같이 적용되며, 신경망 내부 활성화값에서 이를 없애면 학습에 도움이 될 수 있다는 전제에 기반한다. 이 방법의 힘은 활성화값을 정규화하고, 이 정규화를 신경망 구조 자체에 포함시킨 데서 나온다. 이는 어떤 최적화 방법을 쓰든 정규화가 적절히 다뤄지도록 보장해준다. 깊은 신경망 학습에 흔히 쓰이는 확률적 최적화 방법을 가능하게 하기 위해, 미니배치마다 정규화를 수행하고 정규화 파라미터로도 기울기를 역전파한다. Batch Normalization은 활성화마다 추가 파라미터 두 개만 더할 뿐이면서도 신경망의 표현 능력은 그대로 보존한다. 그 결과 신경망은 포화 비선형 함수로도 학습될 수 있고, 높아진 학습률을 더 잘 견디며, 정규화를 위해 Dropout이 필요 없는 경우가 많다. 최고 성능 이미지 분류 모델에 Batch Normalization을 그냥 추가하기만 해도 학습이 상당히 빨라진다. 학습률을 더 높이고 Dropout을 빼는 등 Batch Normalization이 가능하게 해준 다른 조정들을 더하면, 훨씬 적은 학습 스텝만으로 기존 최고 기록에 도달하고 단일 신경망 이미지 분류에서 그 기록을 넘어선다. 더 나아가 Batch Normalization으로 학습한 여러 모델을 결합하면, ImageNet에서 알려진 최고 시스템을 상당한 차이로 앞선다.",
+      "sentences_ko": [
+        {"ko": "우리는 깊은 신경망의 학습을 극적으로 가속하는 새로운 메커니즘을 제시했다.", "note": "have presented는 현재완료로 이 논문이 이룬 일을 정리하는 결론부의 표준 시제입니다."},
+        {"ko": "이는 기계학습 시스템의 학습을 복잡하게 만든다고 알려진 covariate shift가 부분망과 층에도 마찬가지로 적용되며, 신경망 내부 활성화값에서 이를 제거하면 학습에 도움이 될 수 있다는 전제에 기반한다.", "note": "based on the premise that ~: ~라는 전제에 기반한다. which is known to ~가 covariate shift를 부연 설명합니다."},
+        {"ko": "우리가 제안한 방법은 활성화값을 정규화하고, 이 정규화를 신경망 구조 자체에 포함시키는 데서 힘을 얻는다.", "note": "draw its power from A, and from B: A와 B에서 힘을 얻는다. incorporating이 이 방법의 결정적 설계 선택입니다."},
+        {"ko": "이는 신경망을 학습시키는 데 쓰이는 어떤 최적화 방법으로도 정규화가 적절히 다뤄지도록 보장해준다.", "note": "This ensures that ~: 이는 ~을 보장한다. any optimization method that is being used이 방법에 대한 범용성을 강조합니다."},
+        {"ko": "깊은 신경망 학습에 흔히 쓰이는 확률적 최적화 방법을 가능하게 하기 위해, 우리는 미니배치마다 정규화를 수행하고 정규화 파라미터를 거쳐서도 기울기를 역전파한다.", "note": "To enable ~가 목적을 나타냅니다. perform ~ and backpropagate ~가 실제 구현 절차입니다."},
+        {"ko": "Batch Normalization은 활성화마다 추가 파라미터 두 개만 더할 뿐이며, 그렇게 함으로써 신경망의 표현 능력을 보존한다.", "note": "only가 비용의 작음을 강조합니다. in doing so가 그 적은 비용으로 표현력까지 지킨다는 이중 이득을 연결합니다."},
+        {"ko": "우리는 배치 정규화된 신경망을 구성하고, 학습시키고, 추론을 수행하는 알고리즘을 제시했다.", "note": "constructing, training, and performing이 세 동명사가 병렬로 나열되며 이 논문의 기여 범위를 정리합니다."},
+        {"ko": "그 결과로 나온 신경망들은 포화 비선형 함수로도 학습될 수 있고, 높아진 학습률을 더 잘 견디며, 정규화를 위해 흔히 Dropout을 필요로 하지 않는다.", "note": "are more tolerant to ~와 often do not require ~가 and로 병렬 연결되어 실용적 이점들을 나열합니다."},
+        {"ko": "최고 성능 이미지 분류 모델에 Batch Normalization을 그저 추가하기만 해도 학습 속도가 상당히 빨라진다.", "note": "Merely adding ~: 그저 ~를 추가하는 것만으로도. 적은 노력으로 큰 효과를 냈다는 점을 강조합니다."},
+        {"ko": "학습률을 더 높이고, Dropout을 제거하고, Batch Normalization이 가능하게 해준 다른 수정들을 적용함으로써, 우리는 훨씬 적은 학습 스텝만으로 기존 최고 기록에 도달했고, 그런 다음 단일 신경망 이미지 분류에서 그 최고 기록을 넘어섰다.", "note": "By further -ing, removing, and applying ~로 세 가지 조치가 병렬 나열됩니다. and then이 두 단계 성과를 순서대로 잇습니다."},
+        {"ko": "더 나아가 Batch Normalization으로 학습된 여러 모델을 결합함으로써, 우리는 ImageNet에서 알려진 최고 시스템보다 상당한 차이로 더 나은 성능을 낸다.", "note": "by combining ~이 방법을 나타냅니다. by a significant margin이 그 우위의 크기를 확정합니다."}
+      ]
+    }
+  ]
+}

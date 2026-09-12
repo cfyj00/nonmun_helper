@@ -1,0 +1,392 @@
+{
+  "id": "bert",
+  "order": 11,
+  "short": "BERT",
+  "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+  "authors": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova",
+  "year": 2019,
+  "venue": "NAACL 2019",
+  "arxiv": "1810.04805",
+  "url": "https://arxiv.org/abs/1810.04805",
+  "category": "Pre-training",
+  "category_ko": "양방향 사전학습 언어모델",
+  "why_must_read": "'대규모 사전학습 후 미세조정'이라는 오늘날 표준 레시피를 확립한 논문입니다. Transformer를 실제 응용으로 옮긴 결정적 다리이며, 검색·분류 같은 실무 자연어 처리에서 지금도 가장 많이 쓰이는 계열입니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": ["p003", "p004"],
+      "structure": [
+        "이름 제시: BERT는 Bidirectional Encoder Representations from Transformers의 약자다",
+        "차별점: 기존 모델과 달리 모든 층에서 좌우 문맥을 동시에 조건으로 삼아 사전학습한다",
+        "실용적 효과: 출력 층 하나만 더 붙여 미세조정하면 여러 과제에서 최고 성능이 나온다",
+        "강조: 과제별로 구조를 크게 바꿀 필요가 없다",
+        "성과 수치: 11개 자연어 처리 과제에서 최고 기록, GLUE 80.5%, SQuAD v1.1 F1 93.2"
+      ],
+      "key_concepts": {
+        "language representation model": "문장이나 단어를 벡터로 바꿔주는 모델. 이 벡터를 여러 과제에 재사용하는 것이 목표입니다.",
+        "bidirectional": "왼쪽과 오른쪽 문맥을 모두 보는 것. GPT처럼 왼쪽만 보는 방식과 대비되는 BERT의 핵심 성질입니다.",
+        "pre-train / fine-tune": "레이블 없는 대량 텍스트로 먼저 학습(사전학습)하고, 목표 과제의 적은 레이블 데이터로 다시 조정(미세조정)하는 2단계 전략.",
+        "jointly conditioning on both left and right context": "왼쪽 문맥과 오른쪽 문맥을 따로가 아니라 함께 조건으로 삼는 것. ELMo처럼 두 방향을 따로 학습해 이어붙이는 것과 다릅니다.",
+        "GLUE": "9개 자연어 이해 과제를 묶은 종합 벤치마크. 당시 모델의 전반적 실력을 재는 표준 시험지였습니다.",
+        "SQuAD": "위키피디아 문단에서 질문의 답에 해당하는 구간을 찾는 독해 벤치마크. F1은 정답과의 겹침 정도를 재는 점수입니다.",
+        "absolute improvement": "비율이 아닌 점수 차이 그대로의 향상. 80.5%가 7.7%포인트 향상이라면 이전 기록은 72.8%였다는 뜻입니다."
+      },
+      "summary": "BERT는 Transformer 기반의 양방향 인코더 표현 모델이다. 기존 모델과 달리 모든 층에서 왼쪽과 오른쪽 문맥을 함께 조건으로 삼아 레이블 없는 텍스트로부터 깊은 양방향 표현을 사전학습한다. 그 결과 출력 층 하나만 추가해 미세조정하면 질의응답이나 언어 추론 같은 다양한 과제에서 최고 성능 모델을 만들 수 있으며, 과제별로 구조를 크게 손댈 필요가 없다. 11개 자연어 처리 과제에서 최고 기록을 세웠다.",
+      "sentences_ko": [
+        {"ko": "우리는 BERT라고 부르는 새로운 언어 표현 모델을 소개하는데, 이는 Bidirectional Encoder Representations from Transformers의 약자다.", "note": "stand for ~: ~의 약자다. which 계속적 용법이 앞의 BERT를 받아 이름을 풀어줍니다."},
+        {"ko": "최근의 언어 표현 모델들과 달리, BERT는 모든 층에서 왼쪽과 오른쪽 문맥 양쪽을 함께 조건으로 삼음으로써 레이블이 없는 텍스트로부터 깊은 양방향 표현을 사전학습하도록 설계되었다.", "note": "Unlike ~로 시작해 선행 연구와의 차이를 먼저 못박습니다. by jointly conditioning on ~이 방법을 나타냅니다."},
+        {"ko": "그 결과, 사전학습된 BERT 모델은 출력 층 단 하나만 추가해 미세조정하는 것만으로도 질의응답이나 언어 추론 같은 다양한 과제에서 최고 성능 모델을 만들 수 있으며, 과제별 구조를 크게 수정할 필요가 없다.", "note": "with just one additional ~에서 just가 간편함을 강조합니다. without ~ modifications가 실용적 장점을 못박는 마무리입니다."},
+        {"ko": "BERT는 개념적으로 단순하면서 실증적으로 강력하다.", "note": "conceptually와 empirically가 대구를 이루는 부사. 논문의 자기 평가를 한 문장으로 압축한 표현입니다."},
+        {"ko": "BERT는 11개 자연어 처리 과제에서 새로운 최고 성능을 얻었는데, 여기에는 GLUE 점수를 80.5%로(7.7%포인트 절대 향상), MultiNLI 정확도를 86.7%로(4.6% 절대 향상), SQuAD v1.1 질의응답 테스트 F1을 93.2로(1.5포인트 절대 향상), SQuAD v2.0 테스트 F1을 83.1로(5.1포인트 절대 향상) 끌어올린 것이 포함된다.", "note": "including 뒤에 pushing A to B 구조가 네 번 반복됩니다. 괄호 안 수치가 각각의 향상 폭입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — 사전학습의 두 갈래",
+      "src": ["p006", "p007"],
+      "structure": [
+        "배경: 언어 모델 사전학습이 여러 자연어 처리 과제에 효과적임이 이미 입증됐다",
+        "대상 과제 분류: 문장 단위 과제와 토큰 단위 과제로 나뉜다",
+        "기존 전략 두 가지 제시: feature-based와 fine-tuning",
+        "feature-based 설명: ELMo처럼 사전학습 표현을 추가 특징으로 넣고 과제별 구조를 따로 만든다",
+        "fine-tuning 설명: GPT처럼 과제별 파라미터를 최소화하고 전체를 미세조정한다",
+        "공통점 지적: 둘 다 사전학습에서 단방향 언어 모델을 쓴다"
+      ],
+      "key_concepts": {
+        "downstream task": "사전학습을 마친 뒤 실제로 풀려는 목표 과제. 감정 분류, 질의응답 등이 여기 해당합니다.",
+        "sentence-level task": "문장 전체를 놓고 판단하는 과제. 두 문장의 관계를 맞히는 자연어 추론이나 의역 판별이 예입니다.",
+        "token-level task": "토큰 하나하나에 대해 답을 내는 과제. 개체명 인식이나 답 구간 찾기가 예입니다.",
+        "ELMo": "왼쪽에서 오른쪽으로 읽는 모델과 그 반대 방향 모델을 따로 학습해 결과를 이어붙인 2018년 모델. feature-based 방식의 대표입니다.",
+        "OpenAI GPT": "Transformer decoder로 왼쪽 문맥만 보고 다음 단어를 예측하는 모델. fine-tuning 방식의 대표이며 BERT의 직접적 비교 대상입니다.",
+        "objective function": "학습에서 최소화하거나 최대화하려는 목표 함수. 어떤 목표를 쓰느냐가 모델이 무엇을 배우는지를 결정합니다.",
+        "unidirectional language model": "한 방향으로만 문맥을 보는 언어 모델. 다음 단어 예측이라는 목표 자체가 미래를 못 보게 만듭니다."
+      },
+      "summary": "언어 모델 사전학습은 문장 단위 과제와 토큰 단위 과제 모두에서 효과가 입증됐다. 사전학습된 표현을 실제 과제에 적용하는 전략은 두 가지다. ELMo 같은 feature-based 방식은 과제 전용 구조를 만들고 사전학습 표현을 추가 특징으로 넣는다. GPT 같은 fine-tuning 방식은 과제 전용 파라미터를 최소화하고 사전학습 파라미터 전체를 미세조정한다. 그러나 두 방식 모두 사전학습에서는 단방향 언어 모델이라는 같은 목표 함수를 쓴다.",
+      "sentences_ko": [
+        {"ko": "언어 모델 사전학습은 많은 자연어 처리 과제를 개선하는 데 효과적임이 입증되어 왔다.", "note": "has been shown to be ~: ~임이 밝혀져 왔다. 선행 연구를 근거로 배경을 세우는 도입부 문형입니다."},
+        {"ko": "여기에는 문장들을 전체적으로 분석해 문장 간 관계를 예측하는 자연어 추론이나 의역 판별 같은 문장 단위 과제뿐 아니라, 모델이 토큰 수준에서 세밀한 출력을 내야 하는 개체명 인식이나 질의응답 같은 토큰 단위 과제도 포함된다.", "note": "A as well as B: B뿐 아니라 A도. which와 where가 각각 앞의 과제 유형을 설명하는 관계절입니다."},
+        {"ko": "사전학습된 언어 표현을 하위 과제에 적용하는 데는 두 가지 기존 전략이 있다. feature-based 방식과 fine-tuning 방식이다.", "note": "콜론 뒤에 두 항목을 나열해 이후 두 문장의 설명을 예고합니다."},
+        {"ko": "ELMo 같은 feature-based 방식은 사전학습된 표현을 추가적인 특징으로 포함하는 과제 전용 구조를 사용한다.", "note": "such as ~가 삽입되어 대표 사례를 듭니다. that include ~는 architectures를 꾸미는 관계절입니다."},
+        {"ko": "OpenAI GPT 같은 fine-tuning 방식은 과제 전용 파라미터를 최소한만 도입하고, 사전학습된 모든 파라미터를 단순히 미세조정하는 방식으로 하위 과제에 대해 학습된다.", "note": "introduces와 is trained가 and로 병렬 연결된 두 동사입니다. by simply -ing가 방법을 나타냅니다."},
+        {"ko": "두 방식은 사전학습 동안 동일한 목표 함수를 공유하는데, 거기서 이들은 일반적인 언어 표현을 학습하기 위해 단방향 언어 모델을 사용한다.", "note": "where가 앞의 pre-training을 받는 관계부사입니다. 다음 단락에서 공격할 공통 약점을 여기서 지목합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — 단방향성의 한계",
+      "src": "p008",
+      "structure": [
+        "주장: 현재 기법들이 사전학습 표현의 힘을 제약하고 있다",
+        "제약의 정체: 표준 언어 모델이 단방향이라 쓸 수 있는 구조가 제한된다",
+        "구체적 사례: GPT는 좌→우 구조라 각 토큰이 앞쪽 토큰만 볼 수 있다",
+        "영향 1: 문장 단위 과제에서 최적이 아니다",
+        "영향 2: 양방향 문맥이 결정적인 질의응답 같은 토큰 단위 과제에서는 매우 해로울 수 있다"
+      ],
+      "key_concepts": {
+        "restrict the power of": "~의 힘을 제한하다. 논문에서 기존 방법의 한계를 지적할 때 쓰는 표현입니다.",
+        "unidirectional": "한 방향으로만 보는 것. 언어 모델이 다음 단어를 예측하려면 미래를 볼 수 없으므로 구조적으로 강제됩니다.",
+        "left-to-right architecture": "왼쪽에서 오른쪽으로 읽는 구조. GPT의 self-attention은 마스킹으로 뒤쪽을 가립니다.",
+        "attend to previous tokens": "앞쪽 토큰에만 attention하다. Transformer 논문의 decoder 마스킹이 여기에 그대로 쓰입니다.",
+        "sub-optimal": "최적에 못 미치는. 틀렸다고 말하는 대신 완곡하게 비판하는 논문 어휘입니다.",
+        "incorporate context from both directions": "양쪽 방향의 문맥을 함께 반영하다. 답 구간을 찾으려면 질문 뒤의 내용도 봐야 하므로 필수입니다."
+      },
+      "summary": "저자들은 현재 기법들이, 특히 fine-tuning 계열에서 사전학습 표현의 잠재력을 제약한다고 주장한다. 가장 큰 한계는 표준 언어 모델이 단방향이라는 점으로, 이것이 사전학습에 쓸 수 있는 구조의 선택지를 좁힌다. 예를 들어 GPT는 좌에서 우로 읽는 구조라 각 토큰이 앞쪽 토큰만 볼 수 있다. 이런 제약은 문장 단위 과제에서 최적이 아니며, 양방향 문맥이 결정적인 질의응답 같은 토큰 단위 과제에서는 매우 해로울 수 있다.",
+      "sentences_ko": [
+        {"ko": "우리는 현재의 기법들이, 특히 fine-tuning 방식에서 사전학습된 표현의 힘을 제약한다고 주장한다.", "note": "We argue that ~: 우리는 ~라고 주장한다. 논문에서 자기 입장을 명시할 때 쓰는 대표 문형입니다."},
+        {"ko": "가장 큰 한계는 표준 언어 모델이 단방향이라는 점이며, 이것이 사전학습 동안 사용할 수 있는 구조의 선택지를 제한한다.", "note": "The major limitation is that ~로 문제를 한 문장에 못박습니다. this가 앞 절 전체를 받습니다."},
+        {"ko": "예를 들어 OpenAI GPT에서 저자들은 좌에서 우로 가는 구조를 사용하는데, 거기서는 모든 토큰이 Transformer의 self-attention 층에서 앞쪽 토큰만 볼 수 있다.", "note": "where가 앞의 architecture를 받는 관계부사. can only attend to ~가 제약의 내용입니다."},
+        {"ko": "이러한 제약은 문장 단위 과제에서 최적이 아니며, 양방향 문맥을 반영하는 것이 결정적인 질의응답 같은 토큰 단위 과제에 fine-tuning 기반 방식을 적용할 때는 매우 해로울 수 있다.", "note": "sub-optimal에서 very harmful로 강도를 높이는 배치입니다. where it is crucial to ~에서 it은 가주어입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro3",
+      "title": "1 Introduction — BERT와 masked LM",
+      "src": "p009",
+      "drop": [6],
+      "structure": [
+        "제안: fine-tuning 기반 방식을 개선한 BERT를 내놓는다",
+        "핵심 장치: Cloze 과제에서 영감을 얻은 masked language model 목표",
+        "동작 방식: 입력 토큰 일부를 무작위로 가리고, 문맥만 보고 원래 단어를 맞힌다",
+        "효과: 좌우 문맥을 융합할 수 있어 깊은 양방향 Transformer 사전학습이 가능해진다",
+        "두 번째 장치: 문장 쌍 표현을 함께 학습하는 next sentence prediction"
+      ],
+      "key_concepts": {
+        "alleviate": "완화하다, 덜다. 완전히 없앤다기보다 문제를 누그러뜨린다는 뉘앙스입니다.",
+        "masked language model (MLM)": "입력의 일부 단어를 가린 뒤 그 자리를 맞히는 학습 목표. 미래를 봐도 되므로 양방향 학습이 가능해집니다.",
+        "Cloze task": "1953년에 제안된 빈칸 채우기 시험. 사람의 독해력을 재던 오래된 방법에서 아이디어를 빌려온 것입니다.",
+        "vocabulary id": "어휘 사전에서 각 단어에 부여된 번호. 가려진 자리에 어떤 단어가 왔는지를 이 번호로 맞힙니다.",
+        "fuse the left and the right context": "좌우 문맥을 하나로 융합하다. ELMo의 '따로 학습해 이어붙이기'와 대비되는 표현입니다.",
+        "next sentence prediction (NSP)": "두 문장이 실제로 이어지는지 맞히는 이진 분류 과제. 문장 사이 관계를 배우게 하려는 장치입니다."
+      },
+      "summary": "이 논문은 BERT를 제안해 fine-tuning 기반 방식을 개선한다. BERT는 Cloze 과제에서 영감을 얻은 masked language model 목표를 사용해 단방향성 제약을 푼다. 입력 토큰 일부를 무작위로 가린 뒤 오직 문맥만 보고 원래 단어를 맞히게 하는 방식이다. 좌에서 우로만 학습하는 방식과 달리 이 목표는 좌우 문맥을 융합할 수 있어 깊은 양방향 Transformer를 사전학습할 수 있게 한다. 여기에 더해 문장 쌍 표현을 함께 학습하는 next sentence prediction 과제도 사용한다.",
+      "sentences_ko": [
+        {"ko": "이 논문에서 우리는 BERT, 즉 Bidirectional Encoder Representations from Transformers를 제안함으로써 fine-tuning 기반 방식을 개선한다.", "note": "by proposing ~: ~를 제안함으로써. 콜론 뒤가 약자를 풀어 쓴 동격입니다."},
+        {"ko": "BERT는 Cloze 과제에서 영감을 받은 \"masked language model\"(MLM) 사전학습 목표를 사용해 앞서 언급한 단방향성 제약을 완화한다.", "note": "inspired by ~는 objective를 꾸미는 과거분사구. previously mentioned가 앞 단락의 문제와 연결해줍니다."},
+        {"ko": "masked language model은 입력에서 일부 토큰을 무작위로 가리고, 오직 그 문맥만을 근거로 가려진 단어의 원래 어휘 번호를 예측하는 것을 목표로 한다.", "note": "the objective is to ~: 목표는 ~하는 것이다. based only on ~에서 only가 문맥만 쓴다는 조건을 강조합니다."},
+        {"ko": "좌에서 우로 가는 언어 모델 사전학습과 달리, MLM 목표는 표현이 왼쪽 문맥과 오른쪽 문맥을 융합할 수 있게 해주며, 이를 통해 우리는 깊은 양방향 Transformer를 사전학습할 수 있다.", "note": "enables A to B: A가 B할 수 있게 하다. which allows us to ~가 앞 절 전체를 받아 결과를 잇습니다."},
+        {"ko": "masked language model에 더해, 우리는 텍스트 쌍 표현을 함께 사전학습하는 \"next sentence prediction\" 과제도 사용한다.", "note": "In addition to ~: ~에 더하여. jointly가 두 표현을 동시에 학습한다는 점을 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "framework",
+      "title": "3 BERT — 두 단계 프레임워크",
+      "src": ["p025", "p026"],
+      "drop": [6],
+      "structure": [
+        "구성 예고: 이 절에서 BERT와 그 구현을 소개한다",
+        "핵심 구조: 사전학습과 미세조정이라는 두 단계",
+        "사전학습 단계: 레이블 없는 데이터로 여러 사전학습 과제를 학습한다",
+        "미세조정 단계: 사전학습 파라미터로 초기화한 뒤 목표 과제의 레이블 데이터로 전체를 조정한다",
+        "결과: 과제마다 별도의 미세조정 모델이 생기지만 출발점은 같다",
+        "특징: 사전학습 구조와 최종 구조의 차이가 거의 없는 통일된 아키텍처다"
+      ],
+      "key_concepts": {
+        "framework": "여기서는 모델 하나가 아니라 학습 절차 전체를 가리킵니다.",
+        "unlabeled data": "정답표가 없는 원시 텍스트. 위키피디아나 책처럼 인터넷에 많은 데이터를 그대로 쓸 수 있다는 점이 이 방식의 힘입니다.",
+        "initialized with the pre-trained parameters": "사전학습으로 얻은 가중치를 출발점으로 삼는 것. 무작위 초기화 대신 이미 언어를 아는 상태에서 시작합니다.",
+        "labeled data": "정답이 붙은 데이터. 만들기 비싸므로 양이 적고, 그래서 사전학습이 중요해집니다.",
+        "unified architecture across different tasks": "과제가 달라도 구조가 같다는 것. 과제마다 새 구조를 설계하던 이전 관행과 대비됩니다.",
+        "running example": "설명 전체에 걸쳐 반복해서 쓰는 예시. 논문에서 독자의 이해를 돕는 서술 장치입니다."
+      },
+      "summary": "BERT의 프레임워크는 사전학습과 미세조정 두 단계로 이루어진다. 사전학습에서는 레이블 없는 데이터로 여러 사전학습 과제를 학습하고, 미세조정에서는 사전학습된 파라미터로 초기화한 뒤 목표 과제의 레이블 데이터로 모든 파라미터를 조정한다. 과제마다 별도의 미세조정 모델이 만들어지지만 출발점은 모두 같은 사전학습 파라미터다. BERT의 두드러진 특징은 과제가 달라도 구조가 같다는 점으로, 사전학습 구조와 최종 구조의 차이가 거의 없다.",
+      "sentences_ko": [
+        {"ko": "이 절에서 우리는 BERT와 그 구체적인 구현을 소개한다.", "note": "논문에서 절을 여는 표준 문장. 앞으로 다룰 범위를 먼저 알려줍니다."},
+        {"ko": "우리 프레임워크에는 두 단계가 있다. 사전학습과 미세조정이다.", "note": "There are ~ : 존재를 도입하는 구문. 콜론 뒤가 두 단계의 이름입니다."},
+        {"ko": "사전학습 동안 모델은 서로 다른 사전학습 과제들에 걸쳐 레이블이 없는 데이터로 학습된다.", "note": "over different tasks에서 over는 '~에 걸쳐'라는 범위를 나타냅니다."},
+        {"ko": "미세조정의 경우, BERT 모델은 먼저 사전학습된 파라미터로 초기화되고, 이후 모든 파라미터가 하위 과제의 레이블 데이터를 사용해 미세조정된다.", "note": "is initialized와 are fine-tuned가 and로 이어진 수동태 두 개. first가 순서를 표시합니다."},
+        {"ko": "각 하위 과제는 서로 다른 미세조정 모델을 가지는데, 비록 그것들이 동일한 사전학습 파라미터로 초기화되기는 하지만 그렇다.", "note": "even though ~: 비록 ~이지만. 같은 출발점에서 갈라진다는 점을 양보절로 덧붙입니다."},
+        {"ko": "BERT의 두드러진 특징은 서로 다른 과제 전반에 걸친 통일된 구조다.", "note": "A distinctive feature of ~ is ~: ~의 두드러진 특징은 ~이다. 논문에서 강점을 제시하는 문형입니다."},
+        {"ko": "사전학습된 구조와 최종 하위 과제 구조 사이에는 최소한의 차이만 있다.", "note": "minimal difference라는 표현으로 앞 문장의 unified를 구체화합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "arch",
+      "title": "3 BERT — 모델 구조와 크기",
+      "sentences": [
+        {"en": "BERT's model architecture is a multi-layer bidirectional Transformer encoder based on the original implementation described in Vaswani et al. (2017) and released in the tensor2tensor library.", "ko": "BERT의 모델 구조는 Vaswani 외(2017)에서 설명되고 tensor2tensor 라이브러리로 공개된 원래 구현에 기반한 다층 양방향 Transformer encoder다.", "note": "described와 released가 and로 병렬 연결되어 둘 다 implementation을 꾸밉니다. encoder만 쓴다는 점이 핵심입니다."},
+        {"en": "Because the use of Transformers has become common and our implementation is almost identical to the original, we will omit an exhaustive background description of the model architecture and refer readers to Vaswani et al. (2017).", "ko": "Transformer의 사용이 보편화되었고 우리 구현이 원본과 거의 동일하기 때문에, 우리는 모델 구조에 대한 상세한 배경 설명을 생략하고 독자들을 Vaswani 외(2017)로 안내한다.", "note": "refer readers to ~: 독자를 ~로 안내하다. 논문에서 선행 연구로 설명을 넘길 때 쓰는 관용 표현입니다."},
+        {"en": "In this work, we denote the number of layers (i.e., Transformer blocks) as L, the hidden size as H, and the number of self-attention heads as A.", "ko": "이 연구에서 우리는 층의 수(즉 Transformer 블록의 수)를 L, hidden 크기를 H, self-attention 헤드의 수를 A로 표기한다.", "note": "denote A as B: A를 B로 표기하다. i.e.는 '즉'이라는 뜻으로 앞말을 바꿔 말합니다."},
+        {"en": "We primarily report results on two model sizes: BERT-BASE (L=12, H=768, A=12, Total Parameters=110M) and BERT-LARGE (L=24, H=1024, A=16, Total Parameters=340M).", "ko": "우리는 주로 두 가지 모델 크기에 대한 결과를 보고한다. BERT-BASE(L=12, H=768, A=12, 총 파라미터 1억 1천만 개)와 BERT-LARGE(L=24, H=1024, A=16, 총 파라미터 3억 4천만 개)다.", "note": "콜론 뒤에 두 설정을 나열합니다. M은 million으로 백만 단위입니다."},
+        {"en": "BERT-BASE was chosen to have the same model size as OpenAI GPT for comparison purposes.", "ko": "BERT-BASE는 비교 목적으로 OpenAI GPT와 동일한 모델 크기를 갖도록 선택되었다.", "note": "for comparison purposes: 비교를 위해. 크기를 맞춰야 구조의 차이만 비교할 수 있다는 실험 설계입니다."},
+        {"en": "Critically, however, the BERT Transformer uses bidirectional self-attention, while the GPT Transformer uses constrained self-attention where every token can only attend to context to its left.", "ko": "그러나 결정적으로, BERT Transformer는 양방향 self-attention을 사용하는 반면, GPT Transformer는 모든 토큰이 자기 왼쪽 문맥만 볼 수 있는 제한된 self-attention을 사용한다.", "note": "Critically, however가 문두에 나와 이 문장이 핵심 대비임을 알립니다. while이 두 모델을 가릅니다."}
+      ],
+      "structure": [
+        "정체 확인: BERT는 다층 양방향 Transformer encoder이며 원 논문 구현을 그대로 쓴다",
+        "설명 생략의 근거: 구조가 원본과 거의 같으므로 배경 설명은 선행 논문에 맡긴다",
+        "표기 정의: 층 수 L, hidden 크기 H, 헤드 수 A",
+        "두 가지 크기 제시: BERT-BASE 1.1억 파라미터, BERT-LARGE 3.4억 파라미터",
+        "비교 설계: BASE는 GPT와 크기를 맞췄다",
+        "결정적 차이: BERT는 양방향, GPT는 왼쪽만 보는 제한된 self-attention"
+      ],
+      "key_concepts": {
+        "Transformer encoder": "Transformer의 두 부분 중 입력을 읽는 쪽. 마스킹이 없어 모든 위치가 서로를 볼 수 있습니다.",
+        "L, H, A": "각각 층의 수, hidden 벡터 차원, attention 헤드 수. 모델 크기를 기술하는 세 숫자입니다.",
+        "hidden size": "각 토큰을 나타내는 벡터의 차원. Transformer 논문의 d_model과 같은 개념입니다.",
+        "110M / 340M parameters": "학습되는 가중치의 개수. 2018년 기준으로는 큰 모델이었으나 지금 기준으로는 작은 편입니다.",
+        "constrained self-attention": "볼 수 있는 범위를 제한한 self-attention. GPT는 미래 토큰을 마스킹합니다.",
+        "for comparison purposes": "공정한 비교를 위해 조건을 맞추는 실험 설계. 크기가 다르면 성능 차이가 구조 때문인지 크기 때문인지 알 수 없습니다."
+      },
+      "summary": "BERT의 구조는 Transformer 논문의 구현을 거의 그대로 쓴 다층 양방향 Transformer encoder다. 층 수를 L, hidden 크기를 H, 헤드 수를 A로 표기하며, BERT-BASE는 L=12로 파라미터 1.1억 개, BERT-LARGE는 L=24로 3.4억 개다. BASE는 GPT와 공정하게 비교하기 위해 크기를 맞춰 설계했다. 결정적 차이는 BERT가 양방향 self-attention을 쓰는 반면 GPT는 각 토큰이 왼쪽 문맥만 볼 수 있도록 제한한다는 점이다."
+    },
+    {
+      "paragraph_id": "input",
+      "title": "3 BERT — 입력 표현",
+      "src": "p030",
+      "fix": {
+        "7": "Second, we add a learned embedding to every token indicating whether it belongs to sentence A or sentence B."
+      },
+      "structure": [
+        "토큰화: 3만 개 어휘의 WordPiece 임베딩을 쓴다",
+        "특수 토큰 1: 모든 시퀀스의 첫 토큰은 분류용 [CLS]다",
+        "그 용도: [CLS]에 대응하는 최종 hidden state가 시퀀스 전체를 대표하는 표현이 된다",
+        "문장 쌍 처리: 두 문장을 하나의 시퀀스로 묶는다",
+        "구분 방법 1: 특수 토큰 [SEP]으로 나눈다",
+        "구분 방법 2: 각 토큰에 A 문장인지 B 문장인지 알려주는 학습된 임베딩을 더한다"
+      ],
+      "key_concepts": {
+        "WordPiece": "단어를 자주 쓰이는 조각으로 쪼개는 토큰화 방식. 'playing'을 'play'와 '##ing'으로 나눠 어휘 수를 줄입니다.",
+        "[CLS]": "classification의 약자로, 모든 입력 맨 앞에 붙는 특수 토큰. 이 자리의 최종 벡터를 문장 전체의 요약으로 씁니다.",
+        "aggregate sequence representation": "시퀀스 전체를 하나로 모은 표현. 문장 분류처럼 하나의 답만 필요한 과제에서 이 벡터를 씁니다.",
+        "[SEP]": "separator의 약자로 두 문장의 경계를 표시하는 특수 토큰.",
+        "segment embedding": "이 토큰이 A 문장인지 B 문장인지 알려주는 학습된 벡터. 위치 임베딩과 마찬가지로 더해집니다.",
+        "packed together into a single sequence": "두 문장을 하나의 시퀀스로 붙여 넣는 것. 덕분에 self-attention이 두 문장 사이를 자유롭게 오갑니다."
+      },
+      "summary": "BERT는 3만 개 어휘의 WordPiece 임베딩을 사용한다. 모든 시퀀스의 첫 토큰은 분류용 특수 토큰 [CLS]이며, 이 토큰의 최종 hidden state가 분류 과제에서 시퀀스 전체를 대표하는 표현으로 쓰인다. 문장 쌍은 하나의 시퀀스로 묶어 넣되 두 가지 방법으로 구분한다. 특수 토큰 [SEP]으로 나누고, 각 토큰이 A 문장에 속하는지 B 문장에 속하는지 알려주는 학습된 임베딩을 더한다.",
+      "sentences_ko": [
+        {"ko": "우리는 3만 개 토큰 어휘를 가진 WordPiece 임베딩을 사용한다.", "note": "with a ~ vocabulary가 embeddings를 꾸미는 전치사구입니다."},
+        {"ko": "모든 시퀀스의 첫 번째 토큰은 항상 특별한 분류 토큰 [CLS]이다.", "note": "always가 예외 없는 규칙임을 강조합니다."},
+        {"ko": "이 토큰에 대응하는 최종 hidden state는 분류 과제를 위한 시퀀스 전체 표현으로 사용된다.", "note": "corresponding to ~가 앞의 state를 꾸미는 분사구. is used as ~가 그 용도를 밝힙니다."},
+        {"ko": "문장 쌍은 하나의 시퀀스로 함께 묶인다.", "note": "packed together into ~: ~로 함께 채워 넣어지다. 두 문장을 붙여 한 입력으로 만든다는 뜻입니다."},
+        {"ko": "우리는 두 가지 방식으로 문장들을 구별한다.", "note": "짧은 예고 문장 뒤에 First, Second가 이어지는 전형적 열거 구조입니다."},
+        {"ko": "첫째, 우리는 특수 토큰 [SEP]으로 문장들을 분리한다.", "note": "separate A with B: B로 A를 분리하다."},
+        {"ko": "둘째, 우리는 모든 토큰에 그것이 문장 A에 속하는지 문장 B에 속하는지를 나타내는 학습된 임베딩을 더한다.", "note": "indicating ~은 embedding을 꾸미는 현재분사구. whether A or B가 나타내는 내용입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "mlm-why",
+      "title": "3.1 Masked LM — 왜 필요한가",
+      "src": "p034",
+      "fix": {
+        "2": "Unfortunately, standard conditional language models can only be trained left-to-right or right-to-left, since bidirectional conditioning would allow each word to indirectly \"see itself\", and the model could trivially predict the target word in a multi-layered context."
+      },
+      "structure": [
+        "직관: 깊은 양방향 모델이 단방향 모델이나 얕은 결합보다 확실히 강력하다",
+        "그런데 문제: 표준 조건부 언어 모델은 한 방향으로만 학습할 수 있다",
+        "그 이유: 양방향으로 조건을 걸면 각 단어가 간접적으로 자기 자신을 보게 된다",
+        "결과: 여러 층을 거치면 모델이 목표 단어를 손쉽게 맞혀버려 학습이 무의미해진다"
+      ],
+      "key_concepts": {
+        "strictly more powerful": "엄밀히 말해 더 강력한. 수학에서 한쪽이 다른 쪽을 포함하고 더 넓을 때 쓰는 표현입니다.",
+        "shallow concatenation": "얕은 이어붙이기. ELMo처럼 두 방향 모델을 따로 학습해 마지막에 벡터를 붙이는 방식을 가리킵니다.",
+        "conditional language model": "앞선 단어들을 조건으로 다음 단어의 확률을 계산하는 모델. 조건에 미래가 들어가면 성립하지 않습니다.",
+        "see itself": "자기 자신을 보다. 예측해야 할 단어의 정보가 문맥을 통해 우회적으로 새어 들어오는 현상입니다.",
+        "trivially predict": "손쉽게 맞히다. 답이 이미 입력에 들어 있으면 모델이 아무것도 배우지 않고 정답을 냅니다.",
+        "multi-layered context": "여러 층을 거친 문맥. 층이 깊을수록 정보가 옆으로 새어 나갈 경로가 많아집니다."
+      },
+      "summary": "직관적으로 깊은 양방향 모델이 단방향 모델이나 두 방향을 얕게 이어붙인 모델보다 확실히 강력하다고 볼 만하다. 그러나 표준 조건부 언어 모델은 한 방향으로만 학습할 수 있다. 양방향으로 조건을 걸면 각 단어가 간접적으로 자기 자신을 보게 되고, 여러 층을 거치면서 모델이 목표 단어를 손쉽게 맞혀버려 학습이 성립하지 않기 때문이다.",
+      "sentences_ko": [
+        {"ko": "과제 #1: Masked LM. 직관적으로, 깊은 양방향 모델이 좌에서 우로 가는 모델이나 좌우 두 모델을 얕게 이어붙인 것보다 엄밀히 더 강력하다고 믿는 것은 타당하다.", "note": "it is reasonable to believe that ~에서 it은 가주어입니다. either A or B가 두 비교 대상을 묶습니다."},
+        {"ko": "안타깝게도 표준 조건부 언어 모델은 좌에서 우로 또는 우에서 좌로만 학습될 수 있다. 양방향으로 조건을 걸면 각 단어가 간접적으로 \"자기 자신을 볼\" 수 있게 되고, 모델이 여러 층으로 이루어진 문맥 속에서 목표 단어를 손쉽게 예측해버릴 수 있기 때문이다.", "note": "since 이하가 이유절입니다. would allow와 could predict의 조동사가 '그렇게 하면 벌어질 일'이라는 가정을 나타냅니다."}
+      ]
+    },
+    {
+      "paragraph_id": "mlm",
+      "title": "3.1 Masked LM — 방법",
+      "src": "p035",
+      "structure": [
+        "해법: 입력 토큰의 일정 비율을 무작위로 가리고 그 토큰을 예측한다",
+        "이름 붙이기: 이 절차를 masked LM이라 부르며, 문헌에서는 Cloze 과제라고도 한다",
+        "구현: 마스크 토큰의 최종 hidden 벡터를 어휘 전체에 대한 softmax에 넣는다",
+        "설정: 모든 실험에서 각 시퀀스의 WordPiece 토큰 15%를 무작위로 가린다",
+        "선행 연구와의 차이: denoising auto-encoder와 달리 입력 전체를 복원하지 않고 가려진 단어만 예측한다"
+      ],
+      "key_concepts": {
+        "mask": "가리다. 해당 자리를 [MASK]라는 특수 토큰으로 바꿔 원래 단어를 감춥니다.",
+        "output softmax over the vocabulary": "어휘 전체에 대한 확률 분포를 내는 출력층. 3만 개 후보 중 어떤 단어인지 고릅니다.",
+        "15%": "가리는 비율. 너무 적으면 학습 신호가 부족하고 너무 많으면 문맥이 사라지는 절충점입니다.",
+        "denoising auto-encoder": "입력에 잡음을 넣고 원래 입력 전체를 복원하도록 학습하는 모델. BERT는 가려진 자리만 맞히면 됩니다.",
+        "reconstructing the entire input": "입력 전체를 복원하는 것. 가려진 부분만 예측하는 편이 계산이 가볍고 목표가 명확합니다.",
+        "in the literature": "관련 연구 문헌에서. 같은 개념이 다른 이름으로 불린다는 점을 밝힐 때 쓰는 표현입니다."
+      },
+      "summary": "깊은 양방향 표현을 학습하기 위해 BERT는 입력 토큰의 일정 비율을 무작위로 가린 뒤 그 토큰을 예측하게 한다. 이 절차를 masked LM이라 부르며, 문헌에서는 Cloze 과제로도 알려져 있다. 마스크 토큰에 대응하는 최종 hidden 벡터를 어휘 전체에 대한 softmax에 넣어 원래 단어를 고르게 하며, 모든 실험에서 WordPiece 토큰의 15%를 무작위로 가린다. denoising auto-encoder와 달리 입력 전체를 복원하지 않고 가려진 단어만 예측한다.",
+      "sentences_ko": [
+        {"ko": "깊은 양방향 표현을 학습하기 위해, 우리는 단순히 입력 토큰의 일정 비율을 무작위로 가린 다음 그 가려진 토큰들을 예측한다.", "note": "In order to ~가 목적을 나타냅니다. simply가 방법의 단순함을 강조하는 저자들의 자평입니다."},
+        {"ko": "우리는 이 절차를 \"masked LM\"(MLM)이라고 부르는데, 문헌에서는 흔히 Cloze 과제라고 불린다.", "note": "refer to A as B: A를 B라고 부르다. although 절이 다른 이름도 있음을 덧붙입니다."},
+        {"ko": "이 경우 마스크 토큰에 대응하는 최종 hidden 벡터들은 표준 언어 모델에서처럼 어휘 전체에 대한 출력 softmax로 입력된다.", "note": "are fed into ~: ~로 입력되다. as in a standard LM이 기존 방식과 같은 부분을 짚어줍니다."},
+        {"ko": "우리의 모든 실험에서 우리는 각 시퀀스의 전체 WordPiece 토큰 중 15%를 무작위로 가린다.", "note": "In all of our experiments가 문두에 나와 이 설정이 예외 없이 적용됨을 밝힙니다."},
+        {"ko": "denoising auto-encoder와 달리, 우리는 입력 전체를 복원하는 것이 아니라 가려진 단어만 예측한다.", "note": "rather than -ing: ~하는 것이 아니라. In contrast to ~와 짝을 이뤄 차이를 두 번 강조합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "mlm-mismatch",
+      "title": "3.1 Masked LM — 사전학습과 미세조정의 불일치",
+      "src": "p036",
+      "drop": [6],
+      "structure": [
+        "약점 인정: [MASK] 토큰이 미세조정 때는 나타나지 않아 두 단계 사이에 불일치가 생긴다",
+        "완화책 제시: 가릴 단어를 항상 [MASK]로 바꾸지는 않는다",
+        "절차: 학습 데이터 생성기가 토큰 위치의 15%를 무작위로 고른다",
+        "선택된 위치의 처리: 80%는 [MASK], 10%는 임의의 토큰, 10%는 원래 토큰 그대로",
+        "학습: 그 자리의 출력 벡터로 원래 토큰을 cross entropy 손실로 예측한다"
+      ],
+      "key_concepts": {
+        "downside": "단점, 불리한 면. 자기 방법의 약점을 스스로 밝힐 때 쓰는 단어입니다.",
+        "mismatch between pre-training and fine-tuning": "두 단계에서 모델이 보는 입력이 달라지는 문제. 사전학습 때만 [MASK]가 등장합니다.",
+        "mitigate": "완화하다, 누그러뜨리다. 문제를 없애지는 못해도 줄인다는 뉘앙스입니다.",
+        "80/10/10 비율": "가릴 위치 중 대부분은 [MASK]로 바꾸되 일부는 임의 단어나 원래 단어로 두는 설계. 덕분에 모델이 모든 위치를 의심하게 됩니다.",
+        "cross entropy loss": "정답 분포와 예측 분포의 차이를 재는 손실 함수. 분류 문제의 표준 손실입니다.",
+        "T_i": "i번째 입력 토큰의 최종 출력 벡터. 이 벡터로 원래 단어를 맞힙니다."
+      },
+      "summary": "masked LM은 양방향 사전학습을 가능하게 하지만, [MASK] 토큰이 미세조정 때는 등장하지 않아 두 단계 사이에 입력 불일치가 생긴다는 약점이 있다. 이를 완화하기 위해 가릴 단어를 항상 [MASK]로 바꾸지는 않는다. 학습 데이터 생성기가 토큰 위치의 15%를 무작위로 고른 뒤, 그 중 80%는 [MASK]로, 10%는 임의의 토큰으로 바꾸고, 나머지 10%는 원래 토큰을 그대로 둔다. 그 자리의 출력 벡터로 원래 토큰을 cross entropy 손실로 예측한다.",
+      "sentences_ko": [
+        {"ko": "이 방식이 우리에게 양방향 사전학습 모델을 얻게 해주기는 하지만, 단점은 [MASK] 토큰이 미세조정 동안에는 나타나지 않기 때문에 우리가 사전학습과 미세조정 사이에 불일치를 만들고 있다는 점이다.", "note": "Although이 문두에 와서 장점을 먼저 인정하고 단점으로 넘어갑니다. since 이하가 불일치의 원인입니다."},
+        {"ko": "이를 완화하기 위해, 우리는 \"가려질\" 단어를 항상 실제 [MASK] 토큰으로 바꾸지는 않는다.", "note": "not always ~는 부분 부정으로 '항상 ~하지는 않는다'입니다. 전체 부정으로 오해하기 쉬운 자리입니다."},
+        {"ko": "학습 데이터 생성기는 예측을 위해 토큰 위치의 15%를 무작위로 고른다.", "note": "choose A for B: B를 위해 A를 고르다. at random이 무작위 선택을 명시합니다."},
+        {"ko": "i번째 토큰이 선택되면, 우리는 그것을 (1) 80%의 경우 [MASK] 토큰으로, (2) 10%의 경우 임의의 토큰으로, (3) 10%의 경우 변경되지 않은 원래의 i번째 토큰으로 바꾼다.", "note": "80% of the time: 전체 경우의 80%에서. 번호를 매겨 세 갈래 처리를 나열합니다."},
+        {"ko": "그런 다음 T_i가 cross entropy 손실로 원래 토큰을 예측하는 데 사용될 것이다.", "note": "will be used to ~는 절차의 다음 단계를 서술합니다. T_i는 앞 절에서 정의한 출력 벡터입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "nsp",
+      "title": "3.1 Next Sentence Prediction",
+      "src": "p037",
+      "drop": [5, 6],
+      "fix": {
+        "4": "As we show in Figure 1, C is used for next sentence prediction (NSP). Despite its simplicity, we demonstrate in Section 5.1 that pre-training towards this task is very beneficial to both QA and NLI."
+      },
+      "structure": [
+        "동기: 질의응답과 자연어 추론 같은 중요한 과제가 두 문장의 관계 이해에 기반한다",
+        "문제: 그 관계는 언어 모델링만으로는 직접 포착되지 않는다",
+        "해법: 어떤 단일 언어 말뭉치에서도 손쉽게 만들 수 있는 이진 next sentence prediction으로 사전학습한다",
+        "데이터 구성: 50%는 실제로 이어지는 문장(IsNext), 50%는 말뭉치에서 무작위로 뽑은 문장(NotNext)",
+        "효과: 단순하지만 질의응답과 자연어 추론 모두에 크게 도움이 된다"
+      ],
+      "key_concepts": {
+        "Natural Language Inference (NLI)": "전제 문장이 가설 문장을 함의하는지, 모순되는지, 무관한지 판단하는 과제. 두 문장의 관계 이해가 핵심입니다.",
+        "binarized task": "답이 둘 중 하나인 과제로 바꾼 것. IsNext인지 NotNext인지만 맞히면 됩니다.",
+        "monolingual corpus": "한 가지 언어로만 이루어진 텍스트 모음. 번역 쌍처럼 특별한 데이터가 필요 없다는 뜻입니다.",
+        "trivially generated": "손쉽게 만들어지는. 사람이 레이블을 달 필요 없이 문서에서 자동으로 만들 수 있습니다.",
+        "IsNext / NotNext": "두 문장이 실제로 이어지는지 여부를 나타내는 레이블. 각각 50%씩 만듭니다.",
+        "C": "[CLS] 토큰의 최종 hidden 벡터. 시퀀스 전체를 대표하며 NSP 판단에 쓰입니다."
+      },
+      "summary": "질의응답이나 자연어 추론 같은 중요한 과제는 두 문장의 관계를 이해해야 하는데, 이 관계는 언어 모델링만으로는 직접 학습되지 않는다. 그래서 BERT는 어떤 단일 언어 말뭉치에서도 자동으로 만들 수 있는 이진 next sentence prediction 과제로 함께 사전학습한다. 학습 예제를 만들 때 절반은 실제로 이어지는 문장 쌍(IsNext)을, 나머지 절반은 말뭉치에서 무작위로 뽑은 문장(NotNext)을 쓴다. 단순한 과제지만 질의응답과 자연어 추론 성능에 크게 기여한다.",
+      "sentences_ko": [
+        {"ko": "과제 #2: Next Sentence Prediction(NSP). 질의응답과 자연어 추론처럼 중요한 하위 과제 다수는 두 문장 사이의 관계를 이해하는 데 기반하는데, 이 관계는 언어 모델링으로는 직접 포착되지 않는다.", "note": "which is not directly captured ~가 앞의 relationship을 받는 계속적 관계절로 문제를 지적합니다."},
+        {"ko": "문장 관계를 이해하는 모델을 학습시키기 위해, 우리는 어떤 단일 언어 말뭉치로부터도 손쉽게 생성할 수 있는 이진화된 next sentence prediction 과제로 사전학습한다.", "note": "that can be trivially generated ~가 task를 꾸미는 관계절. 데이터 확보가 쉽다는 점이 이 설계의 장점입니다."},
+        {"ko": "구체적으로, 각 사전학습 예제에 대해 문장 A와 B를 고를 때, 50%의 경우 B는 A 다음에 실제로 오는 문장이고(IsNext로 표시), 50%의 경우 B는 말뭉치에서 무작위로 뽑은 문장이다(NotNext로 표시).", "note": "Specifically가 앞 문장을 구체화하는 신호. when choosing ~은 시간을 나타내는 분사구문입니다."},
+        {"ko": "그림 1에서 보이듯 C가 next sentence prediction에 사용된다. 단순함에도 불구하고, 우리는 5.1절에서 이 과제를 향한 사전학습이 질의응답과 자연어 추론 양쪽 모두에 매우 유익함을 보인다.", "note": "Despite its simplicity: 단순함에도 불구하고. 단순한 설계로 큰 효과를 냈다는 논문의 자평입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "finetune",
+      "title": "3.2 Fine-tuning BERT",
+      "src": "p042",
+      "structure": [
+        "주장: 미세조정은 간단하다",
+        "그 이유: self-attention 덕분에 입력과 출력만 바꿔 끼우면 여러 과제를 다룰 수 있다",
+        "기존 관행 소개: 텍스트 쌍 과제에서는 각각 인코딩한 뒤 양방향 cross attention을 적용했다",
+        "BERT의 차이: self-attention으로 두 단계를 하나로 통합한다",
+        "근거: 이어붙인 텍스트 쌍을 self-attention으로 인코딩하면 두 문장 사이의 양방향 cross attention이 사실상 포함된다"
+      ],
+      "key_concepts": {
+        "straightforward": "간단한, 복잡하지 않은. 방법의 실용성을 내세울 때 쓰는 형용사입니다.",
+        "swapping out the appropriate inputs and outputs": "적절한 입력과 출력을 바꿔 끼우는 것. 모델 본체는 그대로 두고 양 끝만 교체합니다.",
+        "text pairs": "두 개의 텍스트를 함께 다루는 과제. 질문과 문단, 전제와 가설이 예입니다.",
+        "cross attention": "서로 다른 두 시퀀스 사이의 attention. 기존 모델은 이를 위한 별도 모듈을 뒀습니다.",
+        "unify these two stages": "두 단계를 하나로 통합하다. 개별 인코딩과 cross attention을 self-attention 한 번으로 대체합니다.",
+        "concatenated text pair": "이어붙인 텍스트 쌍. [SEP]으로 구분해 한 시퀀스로 만든 입력입니다."
+      },
+      "summary": "BERT의 미세조정은 간단하다. Transformer의 self-attention 덕분에 단일 텍스트든 텍스트 쌍이든 적절한 입력과 출력만 바꿔 끼우면 다양한 하위 과제를 다룰 수 있기 때문이다. 텍스트 쌍을 다루는 기존 방식은 두 텍스트를 따로 인코딩한 뒤 양방향 cross attention을 적용하는 것이었다. BERT는 대신 self-attention으로 이 두 단계를 통합하는데, 이어붙인 텍스트 쌍을 self-attention으로 인코딩하면 두 문장 사이의 양방향 cross attention이 사실상 포함되기 때문이다.",
+      "sentences_ko": [
+        {"ko": "미세조정은 간단한데, Transformer의 self-attention 메커니즘이 BERT로 하여금 단일 텍스트가 관여하든 텍스트 쌍이 관여하든 적절한 입력과 출력을 바꿔 끼우는 것만으로 많은 하위 과제를 모델링할 수 있게 해주기 때문이다.", "note": "since 이하가 이유절. 대시로 삽입된 whether ~ or ~가 두 경우를 모두 포괄합니다."},
+        {"ko": "텍스트 쌍이 관여하는 응용에서 흔한 방식은 양방향 cross attention을 적용하기 전에 텍스트 쌍을 독립적으로 인코딩하는 것이다.", "note": "a common pattern is to ~: 흔한 방식은 ~하는 것이다. before -ing가 순서를 나타냅니다."},
+        {"ko": "BERT는 대신 self-attention 메커니즘을 사용해 이 두 단계를 통합하는데, 이어붙인 텍스트 쌍을 self-attention으로 인코딩하는 것이 사실상 두 문장 사이의 양방향 cross attention을 포함하기 때문이다.", "note": "instead가 앞 문장의 관행과 대비합니다. as 이하가 통합이 가능한 이유를 설명합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "6 Conclusion — 결론",
+      "src": "p092",
+      "structure": [
+        "배경 재확인: 언어 모델 전이 학습의 최근 성과가 비지도 사전학습의 중요성을 입증했다",
+        "그 성과의 범위: 데이터가 적은 과제도 깊은 단방향 구조의 혜택을 볼 수 있게 됐다",
+        "이 논문의 기여: 그 발견을 깊은 양방향 구조로 일반화했다",
+        "그 의미: 같은 사전학습 모델 하나로 폭넓은 자연어 처리 과제를 성공적으로 다룰 수 있게 됐다"
+      ],
+      "key_concepts": {
+        "transfer learning": "한 과제에서 배운 것을 다른 과제로 옮겨 쓰는 학습. 사전학습과 미세조정이 그 구체적 형태입니다.",
+        "integral part": "없어서는 안 될 구성 요소. 사전학습이 선택이 아니라 필수가 됐다는 진단입니다.",
+        "low-resource task": "레이블 데이터가 적은 과제. 사전학습 덕분에 적은 데이터로도 좋은 성능을 낼 수 있게 됐습니다.",
+        "generalize findings": "발견을 일반화하다. 단방향에서 성립하던 결과를 양방향으로 확장했다는 뜻입니다.",
+        "the same pre-trained model": "동일한 사전학습 모델 하나. 과제마다 새로 학습하지 않아도 된다는 실용적 가치를 강조합니다."
+      },
+      "summary": "언어 모델 전이 학습의 최근 성과들은 풍부한 비지도 사전학습이 많은 언어 이해 시스템에서 빼놓을 수 없는 요소임을 보여주었다. 특히 이 결과들 덕분에 레이블 데이터가 적은 과제조차 깊은 단방향 구조의 혜택을 볼 수 있게 되었다. 이 논문의 주요 기여는 그 발견을 깊은 양방향 구조로 확장한 것이며, 그 결과 동일한 사전학습 모델 하나로 폭넓은 자연어 처리 과제를 성공적으로 다룰 수 있게 되었다.",
+      "sentences_ko": [
+        {"ko": "언어 모델을 활용한 전이 학습으로 인한 최근의 실증적 개선들은, 풍부한 비지도 사전학습이 많은 언어 이해 시스템에서 없어서는 안 될 구성 요소임을 보여주었다.", "note": "due to ~가 improvements를 꾸미는 전치사구. have demonstrated that 이하가 입증된 내용입니다."},
+        {"ko": "특히 이러한 결과들은 자원이 적은 과제조차 깊은 단방향 구조의 혜택을 볼 수 있게 해준다.", "note": "enable A to B: A가 B할 수 있게 하다. even이 자원이 적은 과제까지 포함됨을 강조합니다."},
+        {"ko": "우리의 주요 기여는 이러한 발견을 깊은 양방향 구조로 한 걸음 더 일반화한 것이며, 이를 통해 동일한 사전학습 모델이 폭넓은 자연어 처리 과제들을 성공적으로 다룰 수 있게 되었다.", "note": "allowing ~은 결과를 나타내는 분사구문. further가 선행 연구에서 한 걸음 더 나아갔음을 표시합니다."}
+      ]
+    }
+  ]
+}

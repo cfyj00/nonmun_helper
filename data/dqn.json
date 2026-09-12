@@ -1,0 +1,359 @@
+{
+  "id": "dqn",
+  "order": 3,
+  "short": "DQN",
+  "title": "Playing Atari with Deep Reinforcement Learning",
+  "authors": "Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra, Martin Riedmiller",
+  "year": 2013,
+  "venue": "NIPS Deep Learning Workshop 2013",
+  "arxiv": "1312.5602",
+  "url": "https://arxiv.org/abs/1312.5602",
+  "category": "Reinforcement Learning",
+  "category_ko": "심층 강화학습",
+  "why_must_read": "화면 픽셀만 보고 게임을 배우는 인공지능을 처음 만들어낸 논문입니다. AlphaGo로 이어지는 DeepMind 계보의 출발점이고, 강화학습의 기본 개념인 보상·정책·가치 함수를 실제 사례로 배울 수 있습니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": "p001",
+      "fix": {
+        "1": "We present the first deep learning model to successfully learn control policies directly from high-dimensional sensory input using reinforcement learning."
+      },
+      "structure": [
+        "선언: 고차원 감각 입력에서 직접 제어 정책을 학습한 최초의 딥러닝 모델",
+        "모델의 정체: Q-learning의 변형으로 학습되는 합성곱 신경망",
+        "입출력 명시: 입력은 원시 픽셀, 출력은 미래 보상을 추정하는 가치 함수",
+        "실험 조건: 아케이드 학습 환경의 아타리 게임 7개에 구조나 알고리즘 조정 없이 적용",
+        "결과: 6개 게임에서 기존 최고 성능을 앞서고 3개에서는 인간 전문가를 능가"
+      ],
+      "key_concepts": {
+        "control policy": "제어 정책. 어떤 상황에서 어떤 행동을 할지 결정하는 규칙으로, 강화학습이 배우려는 대상입니다.",
+        "high-dimensional sensory input": "고차원 감각 입력. 여기서는 게임 화면의 픽셀 전체로, 사람이 눈으로 보는 것과 같은 수준의 원시 데이터입니다.",
+        "reinforcement learning": "행동에 따른 보상을 통해 학습하는 방식. 정답을 알려주는 지도학습과 달리 잘했는지 못했는지만 알려줍니다.",
+        "Q-learning": "각 상태에서 각 행동의 가치를 학습하는 강화학습 알고리즘. 이 논문은 이를 신경망과 결합했습니다.",
+        "value function": "가치 함수. 어떤 상태나 행동이 앞으로 얼마나 많은 보상을 가져다줄지 추정하는 함수입니다.",
+        "Arcade Learning Environment (ALE)": "아타리 2600 게임들을 강화학습 실험용으로 표준화한 환경. 알고리즘을 공정하게 비교할 수 있게 해줍니다.",
+        "no adjustment of the architecture": "구조를 조정하지 않았다는 것. 게임마다 손질하지 않고 하나의 설정으로 모두 학습했다는 점이 이 논문의 강한 주장입니다."
+      },
+      "summary": "이 논문은 강화학습을 사용해 고차원 감각 입력에서 직접 제어 정책을 성공적으로 학습한 최초의 딥러닝 모델을 제시한다. 모델은 Q-learning의 변형으로 학습되는 합성곱 신경망으로, 입력은 원시 픽셀이고 출력은 미래 보상을 추정하는 가치 함수다. 이 방법을 아케이드 학습 환경의 아타리 2600 게임 7개에 구조나 학습 알고리즘의 조정 없이 그대로 적용했으며, 그 중 6개에서 기존의 모든 접근법을 앞섰고 3개에서는 인간 전문가를 능가했다.",
+      "sentences_ko": [
+        {"ko": "우리는 강화학습을 사용해 고차원 감각 입력으로부터 직접 제어 정책을 성공적으로 학습한 최초의 딥러닝 모델을 제시한다.", "note": "the first ~ to ~: ~한 최초의 ~. 이 논문의 기여를 한 문장에 압축한 표현입니다."},
+        {"ko": "이 모델은 Q-learning의 변형으로 학습된 합성곱 신경망으로, 입력은 원시 픽셀이고 출력은 미래 보상을 추정하는 가치 함수다.", "note": "whose가 두 번 반복되며 네트워크의 입력과 출력을 각각 설명합니다."},
+        {"ko": "우리는 이 방법을 아케이드 학습 환경의 아타리 2600 게임 7개에 구조나 학습 알고리즘의 조정 없이 적용한다.", "note": "with no adjustment of ~: ~의 조정 없이. 게임마다 손보지 않았다는 점이 범용성의 핵심 근거입니다."},
+        {"ko": "우리는 이 방법이 그 게임들 중 6개에서 이전의 모든 접근법을 능가하고, 그 중 3개에서는 인간 전문가를 뛰어넘는다는 것을 발견했다.", "note": "outperform과 surpass가 비슷하지만 후자가 더 강한 어감입니다. 인간과의 비교가 임팩트를 만듭니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro-problem",
+      "title": "1 Introduction — 감각 입력에서 배우기의 어려움",
+      "src": ["p003", "p004"],
+      "structure": [
+        "오랜 난제 제시: 시각이나 음성 같은 고차원 감각 입력에서 직접 에이전트를 제어하도록 배우는 일",
+        "지금까지의 방식: 손으로 만든 특징과 선형 가치 함수를 조합했다",
+        "그 한계: 성능이 특징 표현의 품질에 크게 의존한다",
+        "새로운 가능성: 딥러닝이 원시 데이터에서 고수준 특징을 뽑을 수 있게 됐다",
+        "그 성과 범위: 컴퓨터 비전과 음성 인식의 돌파구로 이어졌다",
+        "자연스러운 질문: 같은 기법이 감각 데이터를 다루는 강화학습에도 도움이 될까"
+      ],
+      "key_concepts": {
+        "agent": "환경과 상호작용하며 행동을 고르는 주체. 강화학습의 기본 단위입니다.",
+        "long-standing challenge": "오래된 난제. 이 분야에서 오랫동안 풀리지 않은 문제임을 알리는 표현입니다.",
+        "hand-crafted features": "사람이 직접 설계한 특징. 딥러닝 이전에는 무엇을 볼지 사람이 미리 정해줘야 했습니다.",
+        "linear value function": "가치를 특징들의 선형 결합으로 표현하는 방식. 단순해서 안정적이지만 표현력이 제한됩니다.",
+        "feature representation": "특징 표현. 입력을 어떤 숫자들로 나타내는지를 뜻하며, 여기서 승부가 갈렸습니다.",
+        "high-level features": "고수준 특징. 픽셀 같은 원시 값이 아니라 '모서리', '물체' 같은 추상적 개념에 가까운 표현입니다.",
+        "supervised and unsupervised learning": "정답이 있는 학습과 정답 없이 구조를 찾는 학습. 딥러닝은 둘 다 활용해 왔습니다."
+      },
+      "summary": "시각이나 음성 같은 고차원 감각 입력에서 직접 에이전트를 제어하도록 학습하는 것은 강화학습의 오랜 난제다. 이 영역에서 성공한 강화학습 응용은 대부분 사람이 손으로 만든 특징과 선형 가치 함수를 조합해 왔고, 그래서 성능이 특징 표현의 품질에 크게 좌우됐다. 최근 딥러닝의 발전으로 원시 감각 데이터에서 고수준 특징을 뽑아내는 것이 가능해졌고, 이는 컴퓨터 비전과 음성 인식의 돌파구로 이어졌다. 그렇다면 비슷한 기법이 감각 데이터를 다루는 강화학습에도 도움이 될지 묻는 것은 자연스럽다.",
+      "sentences_ko": [
+        {"ko": "시각과 음성 같은 고차원 감각 입력으로부터 직접 에이전트를 제어하는 법을 배우는 것은 강화학습의 오랜 난제 중 하나다.", "note": "동명사구 Learning to ~이 주어입니다. one of the long-standing challenges가 문제의 역사성을 강조합니다."},
+        {"ko": "이 영역에서 작동하는 성공적인 강화학습 응용의 대부분은 선형 가치 함수나 정책 표현과 결합된, 손으로 만든 특징에 의존해 왔다.", "note": "rely on ~: ~에 의존하다. combined with ~가 features를 꾸미는 과거분사구입니다."},
+        {"ko": "분명히 그러한 시스템의 성능은 특징 표현의 품질에 크게 의존한다.", "note": "Clearly가 문두에 나와 '두말할 필요 없이'라는 확신을 표시합니다."},
+        {"ko": "최근 딥러닝의 발전은 원시 감각 데이터로부터 고수준 특징을 추출하는 것을 가능하게 했고, 이는 컴퓨터 비전과 음성 인식의 돌파구로 이어졌다.", "note": "make it possible to ~에서 it은 가목적어입니다. leading to ~는 결과 분사구문입니다."},
+        {"ko": "이러한 방법들은 합성곱 신경망, 다층 퍼셉트론, 제한 볼츠만 머신, 순환 신경망을 포함한 다양한 신경망 구조를 활용하며, 지도학습과 비지도학습 양쪽을 모두 이용해 왔다.", "note": "utilise와 have exploited가 and로 병렬 연결됩니다. both A and B가 두 학습 방식을 묶습니다."},
+        {"ko": "비슷한 기법이 감각 데이터를 다루는 강화학습에도 유익할 수 있을지 묻는 것은 자연스러워 보인다.", "note": "It seems natural to ask whether ~: ~인지 묻는 것은 자연스러워 보인다. 논문이 다룰 질문을 세우는 대목입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro-challenges",
+      "title": "1 Introduction — 강화학습의 세 가지 난관",
+      "src": "p005",
+      "structure": [
+        "전환: 그러나 강화학습은 딥러닝 관점에서 몇 가지 난관을 제기한다",
+        "난관 1: 딥러닝은 대량의 사람이 붙인 레이블을 요구하는데, 강화학습은 희소하고 잡음 많고 지연된 스칼라 보상만 받는다",
+        "그 심각성: 행동과 보상 사이의 지연이 수천 스텝에 달할 수 있다",
+        "난관 2: 딥러닝은 데이터 표본이 독립이라고 가정하는데, 강화학습에서는 상태들이 강하게 상관되어 있다",
+        "난관 3: 강화학습에서는 알고리즘이 새 행동을 배우면서 데이터 분포 자체가 변한다"
+      ],
+      "key_concepts": {
+        "hand-labelled training data": "사람이 직접 정답을 붙인 학습 데이터. 지도학습의 전제이지만 만들기 비쌉니다.",
+        "scalar reward signal": "숫자 하나로 주어지는 보상 신호. '점수가 올랐다'는 정보만 있고 무엇을 잘했는지는 알려주지 않습니다.",
+        "sparse, noisy and delayed": "희소하고, 잡음이 많고, 지연된. 보상이 드물게, 불확실하게, 한참 뒤에 온다는 세 가지 어려움입니다.",
+        "credit assignment": "어떤 행동이 보상에 기여했는지 가려내는 문제. 지연이 클수록 이 문제가 어려워집니다.",
+        "independent data samples": "독립적인 데이터 표본. 딥러닝의 표준 가정이지만, 연속된 게임 화면은 서로 거의 같아서 이 가정이 깨집니다.",
+        "highly correlated states": "강하게 상관된 상태들. 게임의 연속된 프레임은 거의 동일하므로 학습이 편향됩니다.",
+        "non-stationary distribution": "변하는 분포. 에이전트가 더 잘 플레이하게 되면 보게 되는 화면 자체가 달라집니다."
+      },
+      "summary": "그러나 강화학습은 딥러닝 관점에서 몇 가지 난관을 제기한다. 첫째, 성공적인 딥러닝 응용은 대부분 사람이 붙인 대량의 레이블을 요구하는 반면, 강화학습은 희소하고 잡음이 많으며 지연된 스칼라 보상 신호만으로 배워야 한다. 행동과 그 결과인 보상 사이의 지연은 수천 스텝에 이를 수 있어, 입력과 목표가 직접 연결되는 지도학습과 비교하면 특히 막막하다. 둘째, 대부분의 딥러닝 알고리즘은 데이터 표본이 독립이라고 가정하지만 강화학습에서는 강하게 상관된 상태들의 연속을 마주한다. 셋째, 강화학습에서는 알고리즘이 새 행동을 배우면서 데이터 분포 자체가 변하는데, 고정된 분포를 가정하는 딥러닝 방법에는 이것이 문제가 된다.",
+      "sentences_ko": [
+        {"ko": "그러나 강화학습은 딥러닝의 관점에서 몇 가지 난관을 제기한다.", "note": "present challenges: 난관을 제기하다. from a ~ perspective가 관점을 한정합니다."},
+        {"ko": "첫째, 지금까지 성공적인 딥러닝 응용의 대부분은 대량의 사람이 직접 레이블을 붙인 학습 데이터를 필요로 했다.", "note": "to date: 지금까지. 현재완료와 함께 쓰여 시점의 범위를 나타냅니다."},
+        {"ko": "반면 강화학습 알고리즘은 자주 희소하고 잡음이 많으며 지연되는 스칼라 보상 신호로부터 학습할 수 있어야 한다.", "note": "on the other hand가 앞 문장과 대비합니다. sparse, noisy, delayed 세 형용사가 문제의 성격을 규정합니다."},
+        {"ko": "행동과 그로 인한 보상 사이의 지연은 수천 시간 스텝에 이를 수 있는데, 입력과 목표가 직접 연결되는 지도학습과 비교하면 특히 막막해 보인다.", "note": "which can be ~ long이 앞의 delay를 부연합니다. daunting은 '기죽게 만드는'이라는 강한 형용사입니다."},
+        {"ko": "또 다른 문제는 대부분의 딥러닝 알고리즘이 데이터 표본을 독립이라고 가정하는 반면, 강화학습에서는 일반적으로 강하게 상관된 상태들의 연속을 마주한다는 점이다.", "note": "assume A to be B: A가 B라고 가정하다. while이 두 상황을 대비합니다."},
+        {"ko": "더욱이 강화학습에서는 알고리즘이 새로운 행동을 학습함에 따라 데이터 분포가 변하는데, 이는 고정된 근본 분포를 가정하는 딥러닝 방법에 문제가 될 수 있다.", "note": "Furthermore가 세 번째 난관을 더합니다. as는 여기서 '~함에 따라'라는 뜻입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro-solution",
+      "title": "1 Introduction — 해법과 실험 설계",
+      "src": ["p006", "p009"],
+      "to": "Furthermore the network architecture and all hyperparameters used for training were kept constant across the games.",
+      "fix": {
+        "3": "To alleviate the problems of correlated data and non-stationary distributions, we use an experience replay mechanism which randomly samples previous transitions, and thereby smooths the training distribution over many past behaviors."
+      },
+      "structure": [
+        "주장: 합성곱 신경망이 이 난관들을 극복해 원시 영상에서 제어 정책을 배울 수 있다",
+        "학습 방법: Q-learning의 변형과 확률적 경사 하강법",
+        "핵심 장치: 과거 전이를 무작위로 표집하는 experience replay로 상관성과 비정상성 문제를 완화한다",
+        "실험 환경: 아케이드 학습 환경의 아타리 2600 게임들",
+        "환경의 난도: 초당 60프레임의 210×160 컬러 영상과 사람에게도 어려운 다양한 과제",
+        "목표: 가능한 한 많은 게임을 배우는 단일 신경망 에이전트",
+        "공정성 조건: 게임별 정보나 손으로 만든 특징 없이, 구조와 하이퍼파라미터를 모든 게임에 동일하게 유지"
+      ],
+      "key_concepts": {
+        "experience replay": "겪은 경험을 메모리에 저장했다가 무작위로 꺼내 학습하는 기법. 이 논문의 가장 중요한 실용적 장치입니다.",
+        "transition": "전이. 상태, 행동, 보상, 다음 상태의 묶음으로, 강화학습의 학습 단위입니다.",
+        "smooths the training distribution": "학습 분포를 매끄럽게 만든다. 최근 경험에만 쏠리지 않고 과거 행동들에 걸쳐 고르게 학습하게 됩니다.",
+        "testbed": "시험대. 알고리즘을 검증하기 위한 표준 환경입니다.",
+        "60Hz": "초당 60번. 아타리 게임 화면이 갱신되는 속도입니다.",
+        "not privy to the internal state": "내부 상태에 접근할 수 없는. 에뮬레이터가 실제로 무엇을 계산하는지 모른 채 화면만 본다는 뜻입니다.",
+        "kept constant across the games": "모든 게임에서 동일하게 유지된. 게임마다 튜닝하지 않았다는 것이 범용성 주장의 근거입니다."
+      },
+      "summary": "이 논문은 합성곱 신경망이 이런 난관을 극복하고 복잡한 강화학습 환경에서 원시 영상 데이터만으로 제어 정책을 배울 수 있음을 보인다. 신경망은 Q-learning의 변형과 확률적 경사 하강법으로 학습되며, 데이터 상관성과 비정상적 분포 문제를 완화하기 위해 과거 전이를 무작위로 표집하는 experience replay를 사용한다. 실험 환경은 아케이드 학습 환경의 아타리 2600 게임들로, 초당 60프레임의 210×160 컬러 영상을 입력으로 주는 까다로운 시험대다. 목표는 가능한 한 많은 게임을 배우는 단일 신경망 에이전트를 만드는 것이며, 게임별 정보나 손으로 만든 특징 없이 사람이 하듯 화면과 보상만 보고 배우게 했다.",
+      "sentences_ko": [
+        {"ko": "이 논문은 합성곱 신경망이 이러한 난관들을 극복해 복잡한 강화학습 환경에서 원시 영상 데이터로부터 성공적인 제어 정책을 학습할 수 있음을 보여준다.", "note": "demonstrate that ~: ~임을 보이다. overcome ~ to learn ~에서 to부정사가 결과를 나타냅니다."},
+        {"ko": "이 신경망은 가중치를 갱신하는 확률적 경사 하강법과 함께 Q-learning 알고리즘의 변형으로 학습된다.", "note": "with ~는 부대상황을 나타내는 전치사구. a variant of ~는 '~의 변형'입니다."},
+        {"ko": "상관된 데이터와 비정상적 분포의 문제를 완화하기 위해, 우리는 이전 전이들을 무작위로 표집함으로써 학습 분포를 여러 과거 행동에 걸쳐 매끄럽게 만드는 experience replay 메커니즘을 사용한다.", "note": "To alleviate ~가 목적을 나타냅니다. thereby는 '그렇게 함으로써'라는 결과 부사입니다."},
+        {"ko": "우리는 아케이드 학습 환경에 구현된 여러 아타리 2600 게임에 우리 접근법을 적용한다.", "note": "implemented in ~가 games를 꾸미는 과거분사구입니다."},
+        {"ko": "아타리 2600은 고차원 시각 입력(60Hz의 210×160 RGB 영상)과, 사람 플레이어에게도 어렵도록 설계된 다양하고 흥미로운 과제 집합을 에이전트에게 제시하는 까다로운 강화학습 시험대다.", "note": "present A with B: A에게 B를 제시하다. that were designed ~가 tasks를 꾸밉니다."},
+        {"ko": "우리의 목표는 가능한 한 많은 게임을 성공적으로 배울 수 있는 단일 신경망 에이전트를 만드는 것이다.", "note": "as many ~ as possible: 가능한 한 많은 ~. single이 '하나의 신경망으로'라는 조건을 강조합니다."},
+        {"ko": "이 신경망에는 어떤 게임별 정보나 손으로 설계한 시각 특징도 제공되지 않았고, 에뮬레이터의 내부 상태에도 접근할 수 없었다. 오직 영상 입력과 보상 및 종료 신호, 그리고 가능한 행동의 집합만으로 배웠는데, 이는 인간 플레이어가 하는 것과 똑같다.", "note": "nothing but ~: 오직 ~만. just as a human player would가 사람과의 조건 동일성을 못박습니다."},
+        {"ko": "더욱이 학습에 사용된 신경망 구조와 모든 하이퍼파라미터는 게임 전반에 걸쳐 일정하게 유지되었다.", "note": "were kept constant across ~: ~에 걸쳐 일정하게 유지되었다. 범용성 주장의 결정적 근거입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "background-setup",
+      "title": "2 Background — 문제 설정",
+      "src": "p011",
+      "structure": [
+        "설정: 에이전트가 환경과 행동·관측·보상의 연속으로 상호작용한다",
+        "행동 선택: 매 시간 스텝마다 가능한 게임 행동 집합에서 하나를 고른다",
+        "환경의 반응: 행동이 에뮬레이터로 전달되어 내부 상태와 점수를 바꾼다",
+        "제약 조건: 에이전트는 내부 상태를 관측하지 못하고 화면 이미지만 본다",
+        "보상: 게임 점수의 변화를 보상으로 받는다",
+        "핵심 어려움: 점수가 이전 행동 전체에 의존할 수 있고, 피드백이 수천 스텝 뒤에 올 수 있다"
+      ],
+      "key_concepts": {
+        "agent / environment": "행동하는 주체와 그 주체가 놓인 세계. 강화학습의 기본 구도입니다.",
+        "time-step": "시간 단위. 게임에서는 한 프레임이 한 스텝에 해당합니다.",
+        "action set A = {1, ..., K}": "가능한 행동들의 집합. 아타리에서는 조이스틱 방향과 버튼 조합입니다.",
+        "stochastic environment": "확률적 환경. 같은 행동을 해도 결과가 달라질 수 있는 환경입니다.",
+        "observation x_t": "관측. 에이전트가 실제로 볼 수 있는 것으로, 여기서는 화면 픽셀 벡터입니다.",
+        "reward r_t": "보상. 게임 점수의 변화량이며, 에이전트가 받는 유일한 학습 신호입니다.",
+        "delayed feedback": "지연된 피드백. 지금 한 행동의 결과가 수천 스텝 뒤에 드러날 수 있어 학습을 어렵게 만듭니다."
+      },
+      "summary": "이 논문은 에이전트가 아타리 에뮬레이터라는 환경과 행동, 관측, 보상의 연속으로 상호작용하는 과제를 다룬다. 매 시간 스텝마다 에이전트는 가능한 게임 행동 집합에서 하나를 고르고, 그 행동은 에뮬레이터로 전달되어 내부 상태와 게임 점수를 바꾼다. 에이전트는 에뮬레이터의 내부 상태를 관측하지 못하고 현재 화면을 나타내는 원시 픽셀 벡터만 본다. 여기에 더해 게임 점수의 변화를 나타내는 보상을 받는다. 게임 점수는 이전 행동과 관측 전체에 의존할 수 있고, 어떤 행동에 대한 피드백은 수천 스텝이 지나서야 올 수도 있다.",
+      "sentences_ko": [
+        {"ko": "우리는 에이전트가 환경 E, 이 경우에는 아타리 에뮬레이터와 행동, 관측, 보상의 연속 속에서 상호작용하는 과제를 고려한다.", "note": "in which이 tasks를 받는 관계절입니다. in this case가 추상적 E를 구체화합니다."},
+        {"ko": "매 시간 스텝마다 에이전트는 가능한 게임 행동의 집합 A = {1, ..., K}에서 행동 a_t를 선택한다.", "note": "select A from B: B에서 A를 고르다. legal은 여기서 '규칙상 허용된'이라는 뜻입니다."},
+        {"ko": "그 행동은 에뮬레이터로 전달되어 에뮬레이터의 내부 상태와 게임 점수를 변경한다.", "note": "is passed and modifies로 수동태와 능동태가 이어집니다. 행동의 두 가지 결과입니다."},
+        {"ko": "일반적으로 E는 확률적일 수 있다.", "note": "In general이 예외를 허용하는 일반 진술임을 표시합니다."},
+        {"ko": "에뮬레이터의 내부 상태는 에이전트에 의해 관측되지 않는다. 대신 에이전트는 에뮬레이터로부터 이미지 x_t를 관측하는데, 이는 현재 화면을 나타내는 원시 픽셀 값의 벡터다.", "note": "instead가 못 보는 것과 보는 것을 대비합니다. which is ~가 이미지의 정체를 설명합니다."},
+        {"ko": "여기에 더해 에이전트는 게임 점수의 변화를 나타내는 보상 r_t를 받는다.", "note": "In addition이 관측에 보상을 더합니다. representing ~이 reward를 꾸밉니다."},
+        {"ko": "일반적으로 게임 점수는 이전의 행동과 관측 전체 연속에 의존할 수 있으며, 어떤 행동에 대한 피드백은 수천 시간 스텝이 지난 뒤에야 받게 될 수도 있다는 점에 유의하라.", "note": "Note that ~: ~에 유의하라. 세미콜론 뒤가 이 설정의 가장 어려운 지점을 지적합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "objective",
+      "title": "2 Background — 목표와 최적 가치 함수",
+      "src": "p013",
+      "structure": [
+        "목표 정의: 미래 보상을 최대화하는 방식으로 행동을 골라 상호작용한다",
+        "표준 가정: 미래 보상은 시간 스텝마다 γ만큼 할인된다",
+        "수익 정의: 시점 t의 미래 할인 수익 R_t를 정의한다",
+        "핵심 정의: 최적 행동가치 함수 Q*(s, a)는 어떤 전략을 따르든 얻을 수 있는 최대 기대 수익이다",
+        "정책의 정의: π는 연속된 관측을 행동으로 매핑하는 함수다"
+      ],
+      "key_concepts": {
+        "discount factor γ": "할인 계수. 0과 1 사이의 값으로, 먼 미래의 보상을 현재보다 덜 가치 있게 취급합니다. 1에 가까울수록 장기적으로 생각합니다.",
+        "future discounted return R_t": "미래 할인 수익. 지금부터 게임이 끝날 때까지 받을 보상을 할인해 더한 값입니다.",
+        "action-value function Q(s, a)": "행동가치 함수. 상태 s에서 행동 a를 했을 때 앞으로 기대되는 총 수익입니다. Q-learning의 Q가 바로 이것입니다.",
+        "optimal Q*(s, a)": "최적 행동가치 함수. 가능한 모든 전략 중 최선을 따랐을 때의 기대 수익으로, 이 함수만 알면 최적 행동을 고를 수 있습니다.",
+        "policy π": "정책. 어떤 상태에서 어떤 행동을 할지 정하는 규칙이며, 확률 분포일 수도 있습니다.",
+        "expected return": "기대 수익. 환경이 확률적이므로 평균적으로 얼마를 받을지를 뜻합니다."
+      },
+      "summary": "에이전트의 목표는 미래 보상을 최대화하는 방식으로 행동을 선택해 에뮬레이터와 상호작용하는 것이다. 미래 보상은 시간 스텝마다 γ만큼 할인된다는 표준 가정을 두고, 시점 t의 미래 할인 수익 R_t를 게임이 끝나는 시점까지의 할인된 보상 합으로 정의한다. 최적 행동가치 함수 Q*(s, a)는 어떤 연속된 관측 s를 본 뒤 행동 a를 취했을 때, 어떤 전략을 따르든 달성 가능한 최대 기대 수익으로 정의된다. 여기서 π는 관측 연속을 행동 또는 행동에 대한 확률 분포로 매핑하는 정책이다.",
+      "sentences_ko": [
+        {"ko": "에이전트의 목표는 미래 보상을 최대화하는 방식으로 행동을 선택함으로써 에뮬레이터와 상호작용하는 것이다.", "note": "in a way that ~: ~하는 방식으로. by selecting ~이 상호작용의 방법을 나타냅니다."},
+        {"ko": "우리는 미래 보상이 시간 스텝마다 γ의 비율로 할인된다는 표준적인 가정을 두고, 시점 t에서의 미래 할인 수익을 R_t로 정의하는데, 여기서 T는 게임이 종료되는 시간 스텝이다.", "note": "make the standard assumption that ~: ~라는 표준 가정을 두다. 논문에서 전제를 명시하는 표현입니다."},
+        {"ko": "우리는 최적 행동가치 함수 Q*(s, a)를, 어떤 연속된 관측 s를 본 뒤 어떤 행동 a를 취했을 때 어떤 전략을 따르든 달성 가능한 최대 기대 수익으로 정의한다. 여기서 π는 관측 연속을 행동(또는 행동에 대한 분포)으로 매핑하는 정책이다.", "note": "define A as B: A를 B로 정의하다. achievable by following ~이 return을 꾸미는 형용사구입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "bellman",
+      "title": "2 Background — 벨만 방정식과 Q-network",
+      "src": "p014",
+      "to": "We refer to a neural network function approximator with weights θ as a Q-network.",
+      "fix": {
+        "2": ["This is based on the following intuition: if the optimal value Q*(s', a') of the sequence s' at the next time-step was known for all possible actions a', then the optimal strategy is to select the action a' maximising the expected value of r + γQ*(s', a').", "The basic idea behind many reinforcement learning algorithms is to estimate the action-value function, by using the Bellman equation as an iterative update."]
+      },
+      "structure": [
+        "핵심 정리 소개: 최적 행동가치 함수는 벨만 방정식을 만족한다",
+        "그 직관: 다음 시점의 최적 가치를 안다면, 현재는 r + γQ*를 최대화하는 행동을 고르면 된다",
+        "알고리즘의 기본 발상: 벨만 방정식을 반복적 갱신으로 써서 Q를 추정한다",
+        "이론적 보장: 이런 가치 반복 알고리즘은 최적 함수로 수렴한다",
+        "그러나 현실: 각 연속마다 따로 추정하므로 일반화가 없어 전혀 실용적이지 않다",
+        "대안: 함수 근사기를 써서 Q를 추정한다",
+        "이 논문의 선택: 가중치 θ를 가진 신경망 근사기를 Q-network라 부른다"
+      ],
+      "key_concepts": {
+        "Bellman equation": "벨만 방정식. 지금의 가치를 즉각 보상과 다음 상태의 가치로 나눠 쓰는 관계식으로, 강화학습 전체의 뼈대입니다.",
+        "iterative update": "반복적 갱신. 벨만 방정식의 우변으로 좌변을 계속 고쳐 나가면 참값에 다가갑니다.",
+        "value iteration": "가치 반복. 이 반복 갱신을 수렴할 때까지 되풀이하는 고전적 알고리즘입니다.",
+        "without any generalisation": "일반화 없이. 각 상태를 완전히 따로 취급하므로, 비슷한 화면을 봐도 배운 것을 못 써먹습니다.",
+        "function approximator": "함수 근사기. 모든 상태의 값을 표에 저장하는 대신 함수로 근사하는 장치로, 비슷한 상태끼리 지식을 공유하게 합니다.",
+        "Q-network": "Q 함수를 근사하는 신경망. 이 논문의 이름 DQN이 여기서 나옵니다.",
+        "θ (theta)": "신경망의 가중치. 학습으로 조정되는 파라미터입니다."
+      },
+      "summary": "최적 행동가치 함수는 벨만 방정식이라는 중요한 항등식을 만족한다. 그 직관은 이렇다. 다음 시점 상태의 최적 가치를 모든 가능한 행동에 대해 안다면, 최적 전략은 r + γQ*의 기댓값을 최대화하는 행동을 고르는 것이다. 많은 강화학습 알고리즘의 기본 발상은 벨만 방정식을 반복적 갱신으로 삼아 행동가치 함수를 추정하는 것이며, 이런 가치 반복 알고리즘은 이론적으로 최적 함수로 수렴한다. 그러나 이 기본 접근은 각 연속마다 따로 추정하므로 일반화가 전혀 없어 실용적이지 않다. 그래서 보통은 함수 근사기를 쓰는데, 강화학습에서는 대개 선형 근사기를 썼고 때때로 신경망 같은 비선형 근사기를 썼다. 이 논문은 가중치 θ를 가진 신경망 근사기를 Q-network라 부른다.",
+      "sentences_ko": [
+        {"ko": "최적 행동가치 함수는 벨만 방정식으로 알려진 중요한 항등식을 만족한다.", "note": "obey an identity: 항등식을 만족하다. known as ~가 identity를 꾸미는 과거분사구입니다."},
+        {"ko": "이는 다음과 같은 직관에 기반한다. 다음 시간 스텝의 연속 s'의 최적 가치 Q*(s', a')를 모든 가능한 행동 a'에 대해 알고 있다면, 최적 전략은 r + γQ*(s', a')의 기댓값을 최대화하는 행동 a'를 선택하는 것이다.", "note": "if ~ was known, then ~ is to ~로 조건과 결론이 이어집니다. maximising이 action을 꾸밉니다."},
+        {"ko": "많은 강화학습 알고리즘의 기본 발상은 벨만 방정식을 반복적 갱신으로 사용해 행동가치 함수를 추정하는 것이다.", "note": "The basic idea behind ~ is to ~: ~의 기본 발상은 ~하는 것이다. by using ~이 방법을 나타냅니다."},
+        {"ko": "이러한 가치 반복 알고리즘은 i가 무한대로 갈 때 최적 행동가치 함수로 수렴한다.", "note": "converge to ~: ~로 수렴하다. as i → ∞는 극한을 나타내는 수학 표기입니다."},
+        {"ko": "실제로는 이 기본 접근이 전혀 실용적이지 않은데, 행동가치 함수가 아무런 일반화 없이 각 연속마다 따로 추정되기 때문이다.", "note": "totally impractical: 전혀 실용적이지 않은. because 이하가 그 이유이며 without any generalisation이 핵심입니다."},
+        {"ko": "대신 행동가치 함수를 추정하기 위해 함수 근사기를 사용하는 것이 일반적이다.", "note": "it is common to ~: ~하는 것이 일반적이다. Instead가 앞의 실패한 방법과 대비합니다."},
+        {"ko": "강화학습 학계에서 이것은 일반적으로 선형 함수 근사기이지만, 때로는 신경망 같은 비선형 함수 근사기가 대신 사용되기도 한다.", "note": "such as ~가 비선형 근사기의 예를 듭니다. 이 논문이 택할 방향을 미리 알리는 문장입니다."},
+        {"ko": "우리는 가중치 θ를 가진 신경망 함수 근사기를 Q-network라고 부른다.", "note": "refer to A as B: A를 B라고 부르다. 논문의 핵심 용어를 도입하는 문장입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "model-free",
+      "title": "2 Background — model-free와 off-policy",
+      "src": "p015",
+      "fix": {
+        "1": ["Note that this algorithm is model-free: it solves the reinforcement learning task directly using samples from the emulator E, without explicitly constructing an estimate of E.", "It is also off-policy: it learns about the greedy strategy a = max_a Q(s, a; θ), while following a behaviour distribution that ensures adequate exploration of the state space."]
+      },
+      "structure": [
+        "성질 1: 이 알고리즘은 model-free다",
+        "그 의미: 환경의 추정 모델을 명시적으로 만들지 않고 표본만으로 문제를 푼다",
+        "성질 2: 이 알고리즘은 off-policy다",
+        "그 의미: 탐욕 전략을 배우면서 실제로는 탐색을 보장하는 다른 분포를 따른다",
+        "구체적 구현: 확률 1−ε로 탐욕 행동을, 확률 ε로 무작위 행동을 고르는 ε-greedy 전략"
+      ],
+      "key_concepts": {
+        "model-free": "환경이 어떻게 작동하는지 모델을 세우지 않는 방식. 게임 규칙을 배우지 않고 경험만으로 좋은 행동을 익힙니다.",
+        "off-policy": "학습하는 정책과 실제로 행동하는 정책이 다른 방식. 덕분에 과거 경험을 재활용할 수 있어 experience replay가 가능해집니다.",
+        "greedy strategy": "탐욕 전략. 현재 추정으로 가장 좋아 보이는 행동을 항상 고르는 것으로, 새로운 시도를 하지 않습니다.",
+        "behaviour distribution": "실제로 행동을 뽑는 분포. 학습 대상인 탐욕 전략과 달리 무작위성을 섞어 다양한 상태를 방문합니다.",
+        "exploration": "탐색. 아직 모르는 행동을 시도해 보는 것으로, 탐욕만 하면 더 좋은 길을 영영 못 찾습니다.",
+        "ε-greedy": "확률 ε로 무작위 행동, 나머지는 탐욕 행동을 고르는 가장 단순하고 널리 쓰이는 탐색 전략입니다."
+      },
+      "summary": "이 알고리즘은 model-free다. 환경 E의 추정 모델을 명시적으로 만들지 않고 에뮬레이터에서 얻은 표본만으로 강화학습 문제를 직접 푼다는 뜻이다. 또한 off-policy이기도 하다. 실제로는 상태 공간을 충분히 탐색하도록 보장하는 행동 분포를 따르면서, 배우는 대상은 탐욕 전략이기 때문이다. 실제 구현에서 행동 분포는 대개 ε-greedy 전략으로 정해지는데, 확률 1−ε로 탐욕 전략을 따르고 확률 ε로 무작위 행동을 선택한다.",
+      "sentences_ko": [
+        {"ko": "이 알고리즘이 model-free라는 점에 유의하라. 이 알고리즘은 E의 추정치를 명시적으로 구성하지 않고, 에뮬레이터 E에서 나온 표본을 사용해 강화학습 과제를 직접 푼다.", "note": "콜론 뒤가 model-free의 정의입니다. without explicitly -ing가 하지 않는 일을 명시합니다."},
+        {"ko": "이 알고리즘은 또한 off-policy다. 상태 공간의 적절한 탐색을 보장하는 행동 분포를 따르면서, 탐욕 전략 a = max_a Q(s, a; θ)에 대해 학습한다.", "note": "learns about A while following B: B를 따르면서 A를 배운다. 이 분리가 off-policy의 핵심입니다."},
+        {"ko": "실제로는 행동 분포가 흔히 ε-greedy 전략으로 선택되는데, 이는 확률 1−ε로 탐욕 전략을 따르고 확률 ε로 무작위 행동을 선택하는 방식이다.", "note": "that follows ~ and selects ~가 strategy를 꾸미는 관계절입니다. 두 동사가 두 경우를 서술합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "replay",
+      "title": "4 Deep Reinforcement Learning — experience replay",
+      "src": "p026",
+      "structure": [
+        "대비 설정: TD-Gammon 같은 온라인 방식과 달리 experience replay를 사용한다",
+        "저장 방식: 매 시간 스텝의 경험을 데이터셋에 모아 replay memory로 만든다",
+        "학습 방식: 내부 루프에서 저장된 표본 중 무작위로 뽑아 Q-learning 갱신을 수행한다",
+        "행동 선택: replay를 수행한 뒤 ε-greedy 정책에 따라 행동을 고른다",
+        "실용적 처리: 임의 길이의 이력은 다루기 어려우므로 함수 φ로 고정 길이 표현을 만든다",
+        "이름: 이 전체 알고리즘을 deep Q-learning이라 부른다"
+      ],
+      "key_concepts": {
+        "online approach": "경험한 즉시 학습하고 버리는 방식. 데이터를 한 번만 쓰고 순서대로 학습합니다.",
+        "e_t = (s_t, a_t, r_t, s_{t+1})": "하나의 경험 튜플. 상태, 행동, 보상, 다음 상태로 이루어진 학습의 최소 단위입니다.",
+        "replay memory": "경험을 쌓아두는 저장소. 여러 에피소드에 걸친 경험이 섞여 들어갑니다.",
+        "minibatch update": "여러 표본을 묶어 한 번에 갱신하는 것. 딥러닝의 표준 학습 방식입니다.",
+        "drawn at random": "무작위로 뽑힌. 연속된 프레임의 상관성을 깨는 결정적 장치입니다.",
+        "function φ (phi)": "가변 길이 이력을 고정 길이 표현으로 바꾸는 전처리 함수. 실제로는 최근 4프레임을 쌓아 씁니다.",
+        "deep Q-learning": "이 논문이 제안한 전체 알고리즘의 이름. 나중에 DQN으로 널리 불리게 됩니다."
+      },
+      "summary": "TD-Gammon 같은 온라인 방식과 달리, 이 논문은 experience replay를 사용한다. 매 시간 스텝의 경험을 상태·행동·보상·다음 상태의 튜플로 데이터셋에 저장하고, 여러 에피소드에 걸쳐 모아 replay memory를 만든다. 알고리즘 내부 루프에서는 저장된 표본 중 무작위로 뽑은 경험에 Q-learning 갱신 또는 미니배치 갱신을 적용한다. replay를 수행한 뒤 에이전트는 ε-greedy 정책에 따라 행동을 선택하고 실행한다. 임의 길이의 이력을 신경망 입력으로 쓰는 것은 어려우므로, Q 함수는 함수 φ가 만들어낸 고정 길이 이력 표현 위에서 작동한다. 저자들은 이 전체 알고리즘을 deep Q-learning이라 부른다.",
+      "sentences_ko": [
+        {"ko": "TD-Gammon 및 이와 유사한 온라인 접근법들과 달리, 우리는 experience replay라고 알려진 기법을 활용하는데, 여기서 우리는 매 시간 스텝의 에이전트 경험 e_t = (s_t, a_t, r_t, s_{t+1})를 데이터셋 D = e_1, ..., e_N에 저장하고, 여러 에피소드에 걸쳐 모아 replay memory로 만든다.", "note": "In contrast to ~: ~와 대조적으로. where가 technique을 받는 관계부사이고 pooled over ~가 결과를 부연합니다."},
+        {"ko": "알고리즘의 내부 루프 동안, 우리는 저장된 표본들의 풀에서 무작위로 뽑힌 경험 e ∼ D에 Q-learning 갱신 또는 미니배치 갱신을 적용한다.", "note": "drawn at random from ~이 experience를 꾸미는 과거분사구입니다."},
+        {"ko": "experience replay를 수행한 뒤, 에이전트는 ε-greedy 정책에 따라 행동을 선택하고 실행한다.", "note": "After performing ~은 시간을 나타내는 분사구문. according to ~가 선택의 기준입니다."},
+        {"ko": "임의 길이의 이력을 신경망 입력으로 사용하는 것은 어려울 수 있으므로, 우리의 Q 함수는 대신 함수 φ가 만들어낸 고정 길이의 이력 표현 위에서 작동한다.", "note": "Since가 이유절을 이끕니다. produced by ~가 representation을 꾸밉니다."},
+        {"ko": "우리가 deep Q-learning이라고 부르는 전체 알고리즘은 알고리즘 1에 제시되어 있다.", "note": "which we call ~가 algorithm을 받는 계속적 관계절입니다. 이름을 붙이며 절을 마무리합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "replay-why",
+      "title": "4 Deep Reinforcement Learning — replay의 세 가지 이점",
+      "sentences": [
+        {"en": "This approach has several advantages over standard online Q-learning.", "ko": "이 접근법은 표준적인 온라인 Q-learning에 비해 몇 가지 장점을 가진다.", "note": "have advantages over ~: ~에 비해 장점을 가지다. over가 비교 대상을 이끕니다."},
+        {"en": "First, each step of experience is potentially used in many weight updates, which allows for greater data efficiency.", "ko": "첫째, 경험의 각 스텝이 잠재적으로 여러 번의 가중치 갱신에 사용되며, 이는 더 큰 데이터 효율을 가능하게 한다.", "note": "which allows for ~가 앞 절 전체를 받습니다. allow for는 '~를 가능하게 하다'입니다."},
+        {"en": "Second, learning directly from consecutive samples is inefficient, due to the strong correlations between the samples; randomizing the samples breaks these correlations and therefore reduces the variance of the updates.", "ko": "둘째, 연속된 표본으로부터 직접 학습하는 것은 표본들 사이의 강한 상관관계 때문에 비효율적이다. 표본을 무작위화하면 이 상관관계가 깨지고 따라서 갱신의 분산이 줄어든다.", "note": "세미콜론이 문제와 해법을 잇습니다. 동명사구 randomizing ~이 뒤 절의 주어입니다."},
+        {"en": "Third, when learning on-policy the current parameters determine the next data sample that the parameters are trained on.", "ko": "셋째, on-policy로 학습할 때는 현재 파라미터가 그 파라미터를 학습시킬 다음 데이터 표본을 결정한다.", "note": "that the parameters are trained on이 sample을 꾸미는 관계절. 전치사 on이 절 끝에 남았습니다."},
+        {"en": "For example, if the maximizing action is to move left then the training samples will be dominated by samples from the left-hand side; if the maximizing action then switches to the right then the training distribution will also switch.", "ko": "예를 들어 최대화 행동이 왼쪽으로 이동하는 것이라면 학습 표본은 왼쪽에서 온 표본들이 지배하게 된다. 그 뒤 최대화 행동이 오른쪽으로 바뀌면 학습 분포도 따라서 바뀐다.", "note": "be dominated by ~: ~가 지배하다. 구체적 예로 추상적 문제를 눈에 보이게 만듭니다."},
+        {"en": "It is easy to see how unwanted feedback loops may arise and the parameters could get stuck in a poor local minimum, or even diverge catastrophically.", "ko": "원치 않는 피드백 루프가 어떻게 생겨날 수 있는지, 그리고 파라미터가 어떻게 나쁜 지역 최소점에 갇히거나 심지어 파국적으로 발산할 수 있는지 쉽게 알 수 있다.", "note": "It is easy to see how ~에서 it은 가주어입니다. or even이 더 나쁜 경우를 덧붙입니다."},
+        {"en": "By using experience replay the behavior distribution is averaged over many of its previous states, smoothing out learning and avoiding oscillations or divergence in the parameters.", "ko": "experience replay를 사용하면 행동 분포가 이전의 여러 상태에 걸쳐 평균화되어, 학습이 매끄러워지고 파라미터의 진동이나 발산이 방지된다.", "note": "smoothing과 avoiding이 결과를 나타내는 분사구문으로 병렬 연결됩니다."}
+      ],
+      "structure": [
+        "선언: 이 접근법은 표준 온라인 Q-learning보다 여러 장점이 있다",
+        "장점 1: 각 경험이 여러 번의 갱신에 쓰여 데이터 효율이 높아진다",
+        "장점 2: 연속 표본의 강한 상관성을 무작위화가 깨뜨려 갱신의 분산이 줄어든다",
+        "장점 3의 배경: on-policy 학습에서는 현재 파라미터가 다음 데이터를 결정한다",
+        "그 위험의 예시: 왼쪽으로 가는 행동이 최적이면 학습 데이터가 왼쪽에 쏠린다",
+        "그 결과: 피드백 루프가 생겨 나쁜 지역 최소점에 갇히거나 발산할 수 있다",
+        "해결: replay가 행동 분포를 과거 상태에 걸쳐 평균화해 학습을 안정시킨다"
+      ],
+      "key_concepts": {
+        "data efficiency": "데이터 효율. 같은 경험에서 얼마나 많이 배우는가로, 경험 수집이 비싼 강화학습에서 특히 중요합니다.",
+        "correlation between samples": "표본 사이의 상관관계. 연속된 게임 프레임은 거의 같아서 학습이 한쪽으로 치우칩니다.",
+        "variance of the updates": "갱신의 분산. 갱신 방향이 들쭉날쭉하면 학습이 불안정해집니다.",
+        "on-policy": "학습하는 정책과 행동하는 정책이 같은 방식. 현재 정책이 다음에 볼 데이터를 결정해 자기강화 고리가 생깁니다.",
+        "feedback loop": "피드백 루프. 한쪽으로 치우친 데이터가 정책을 더 치우치게 만들고 그것이 다시 데이터를 치우치게 하는 악순환입니다.",
+        "local minimum": "지역 최소점. 주변보다는 낮지만 전체 최소는 아닌 지점으로, 여기 갇히면 더 나은 해를 못 찾습니다.",
+        "diverge catastrophically": "파국적으로 발산하다. 학습이 수렴하지 않고 값이 무한대로 튀어버리는 실패 양상입니다."
+      },
+      "summary": "experience replay는 표준 온라인 Q-learning에 비해 세 가지 장점이 있다. 첫째, 각 경험이 여러 번의 가중치 갱신에 쓰이므로 데이터 효율이 높아진다. 둘째, 연속된 표본은 서로 강하게 상관되어 학습이 비효율적인데, 무작위로 뽑으면 이 상관관계가 깨져 갱신의 분산이 줄어든다. 셋째, on-policy로 학습하면 현재 파라미터가 다음에 볼 데이터를 결정한다. 왼쪽으로 가는 행동이 최적이면 학습 데이터가 왼쪽에 쏠리고, 최적 행동이 바뀌면 분포도 따라 바뀐다. 이런 피드백 루프는 파라미터를 나쁜 지역 최소점에 가두거나 파국적으로 발산시킬 수 있다. experience replay는 행동 분포를 과거의 여러 상태에 걸쳐 평균화해 학습을 매끄럽게 하고 진동이나 발산을 막는다."
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "6 Conclusion — 결론",
+      "src": "p060",
+      "structure": [
+        "성취 1: 강화학습을 위한 새로운 딥러닝 모델을 도입했다",
+        "그 능력 입증: 원시 픽셀만 입력으로 써서 어려운 아타리 게임의 제어 정책을 익혔다",
+        "성취 2: 확률적 미니배치 갱신과 experience replay를 결합한 온라인 Q-learning 변형을 제시했다",
+        "그 목적: 강화학습을 위한 깊은 신경망 학습을 수월하게 만드는 것",
+        "결과: 시험한 7개 게임 중 6개에서 최고 성능, 구조와 하이퍼파라미터 조정 없이"
+      ],
+      "key_concepts": {
+        "master": "숙달하다. 단순히 학습했다가 아니라 능숙해졌다는 강한 어감입니다.",
+        "using only raw pixels as input": "오직 원시 픽셀만 입력으로 사용해서. 사람과 같은 조건이라는 점이 이 논문의 자랑입니다.",
+        "stochastic minibatch updates": "확률적 미니배치 갱신. 딥러닝의 표준 학습 방식을 강화학습에 들여온 것입니다.",
+        "ease the training": "학습을 수월하게 만들다. 깊은 신경망과 강화학습을 결합할 때의 불안정성을 완화한다는 뜻입니다.",
+        "state-of-the-art results": "최고 성능 결과. 기존의 모든 방법을 앞섰다는 뜻입니다.",
+        "with no adjustment": "조정 없이. 게임마다 손보지 않고 하나의 설정으로 모두 해냈다는 것이 범용성의 증거입니다."
+      },
+      "summary": "이 논문은 강화학습을 위한 새로운 딥러닝 모델을 도입하고, 오직 원시 픽셀만 입력으로 사용해 어려운 아타리 2600 게임의 제어 정책을 숙달하는 능력을 입증했다. 또한 확률적 미니배치 갱신과 experience replay 메모리를 결합한 온라인 Q-learning의 변형을 제시했는데, 이는 강화학습을 위한 깊은 신경망 학습을 수월하게 만들기 위한 것이다. 이 접근법은 구조나 하이퍼파라미터를 조정하지 않고도 시험한 7개 게임 중 6개에서 최고 성능을 냈다.",
+      "sentences_ko": [
+        {"ko": "이 논문은 강화학습을 위한 새로운 딥러닝 모델을 도입했고, 오직 원시 픽셀만을 입력으로 사용해 아타리 2600 컴퓨터 게임의 어려운 제어 정책을 숙달하는 그 능력을 입증했다.", "note": "introduced와 demonstrated가 and로 병렬 연결됩니다. using only ~가 조건의 엄격함을 강조합니다."},
+        {"ko": "우리는 또한 강화학습을 위한 깊은 신경망의 학습을 수월하게 하기 위해, 확률적 미니배치 갱신과 experience replay 메모리를 결합한 온라인 Q-learning의 변형을 제시했다.", "note": "that combines A with B가 variant를 꾸밉니다. to ease ~가 목적을 나타냅니다."},
+        {"ko": "우리 접근법은 구조나 하이퍼파라미터의 조정 없이도 시험한 7개 게임 중 6개에서 최고 성능의 결과를 냈다.", "note": "with no adjustment of ~: ~의 조정 없이. 조건의 엄격함이 결과의 가치를 높입니다."}
+      ]
+    }
+  ]
+}

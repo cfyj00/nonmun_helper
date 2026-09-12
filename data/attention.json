@@ -1,0 +1,430 @@
+{
+  "id": "attention",
+  "order": 10,
+  "short": "Attention Is All You Need",
+  "title": "Attention Is All You Need",
+  "authors": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, Illia Polosukhin",
+  "year": 2017,
+  "venue": "NeurIPS 2017",
+  "arxiv": "1706.03762",
+  "url": "https://arxiv.org/abs/1706.03762",
+  "category": "Transformer",
+  "category_ko": "어텐션 기반 시퀀스 모델",
+  "why_must_read": "GPT·BERT·Claude까지 오늘날 거의 모든 대형 언어 모델이 이 논문의 Transformer 구조 위에 서 있습니다. 딥러닝 논문 중 가장 많이 인용된 축에 들며, 여기서 쓰는 용어(어텐션, 헤드, 임베딩)가 이후 논문의 공용어가 됩니다.",
+  "sections": [
+    {
+      "paragraph_id": "abstract",
+      "title": "Abstract — 초록",
+      "src": "p001",
+      "fix": {
+        "1": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder.",
+        "5": "Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU."
+      },
+      "structure": [
+        "기존 판도: 시퀀스 변환 모델은 복잡한 RNN 또는 CNN 기반이며 encoder-decoder 구조를 쓴다",
+        "기존 방식의 보완책: 최고 성능 모델들은 여기에 attention을 덧붙인다",
+        "제안: recurrence와 convolution을 전부 버리고 attention만으로 만든 Transformer",
+        "근거 1 — 품질과 속도: 번역 두 과제에서 더 좋으면서 병렬화가 잘 되고 학습이 빠르다",
+        "근거 2 — 구체적 수치: WMT 2014 영-독 28.4 BLEU, 영-불 41.8 BLEU",
+        "확장성: 영어 구문 분석에도 잘 적용되어 범용성을 보인다"
+      ],
+      "key_concepts": {
+        "sequence transduction": "한 시퀀스를 다른 시퀀스로 바꾸는 문제. 번역(영어 문장 → 독일어 문장), 요약, 음성 인식이 모두 여기에 해당합니다.",
+        "encoder-decoder": "입력을 압축해 내부 표현으로 만드는 encoder와, 그 표현에서 출력을 만들어내는 decoder로 나뉜 구조.",
+        "attention mechanism": "출력의 각 위치가 입력의 모든 위치를 직접 들여다보고 필요한 곳에 가중치를 크게 주는 방식. 거리와 무관하게 정보를 가져올 수 있습니다.",
+        "BLEU": "기계번역 품질 점수. 사람이 만든 정답 번역과 얼마나 겹치는지를 0~100으로 재며, 높을수록 좋습니다. 2점 차이는 이 분야에서 큰 폭입니다.",
+        "ensemble": "여러 모델을 학습시켜 예측을 평균 내는 기법. 성능은 오르지만 비용이 몇 배로 듭니다. '앙상블보다 낫다'는 말은 강한 주장입니다.",
+        "constituency parsing": "문장을 구(phrase) 단위 트리로 분해하는 문법 분석 과제. 번역과 성격이 아주 달라서, 여기서도 통하면 범용성이 입증됩니다."
+      },
+      "summary": "지금까지 시퀀스 변환의 주류는 RNN이나 CNN에 attention을 얹은 encoder-decoder 모델이었다. 이 논문은 recurrence와 convolution을 완전히 없애고 attention만으로 구성한 Transformer를 제안한다. 번역 두 과제에서 품질이 더 좋으면서 병렬화가 잘 되고 학습 시간이 크게 줄었으며, 영-독 28.4 BLEU로 앙상블을 포함한 기존 최고 기록을 2점 이상 넘어섰다.",
+      "sentences_ko": [
+        {"ko": "현재 지배적인 시퀀스 변환 모델들은 encoder와 decoder를 포함하는 복잡한 순환 신경망 또는 합성곱 신경망에 기반한다.", "note": "be based on ~: ~에 기반하다. that include ...는 앞의 networks를 꾸미는 관계절입니다."},
+        {"ko": "가장 성능이 좋은 모델들은 여기에 더해 attention 메커니즘을 통해 encoder와 decoder를 연결한다.", "note": "also가 '기존 구조에 더해'라는 뜻. 뒤에서 뒤집을 통념을 먼저 세워두는 전형적 도입부입니다."},
+        {"ko": "우리는 오직 attention 메커니즘에만 기반하며, recurrence와 convolution을 완전히 배제한 새롭고 단순한 신경망 구조인 Transformer를 제안한다.", "note": "dispensing with ~는 분사구문으로 '~를 없애면서'. 논문 전체의 주장이 담긴 핵심 문장입니다."},
+        {"ko": "두 가지 기계번역 과제에 대한 실험은 이 모델들이 품질 면에서 우수하면서도 병렬화가 더 잘 되고 학습에 훨씬 적은 시간이 든다는 것을 보여준다.", "note": "superior in quality while being ...: while + 분사는 '~하면서 동시에'. 품질과 효율을 동시에 잡았다는 이중 주장입니다."},
+        {"ko": "우리 모델은 WMT 2014 영어-독일어 번역 과제에서 28.4 BLEU를 달성하여, 앙상블을 포함한 기존 최고 성능을 2 BLEU 이상 앞선다.", "note": "improving over ...는 결과를 나타내는 분사구문. including ensembles가 삽입되어 주장의 강도를 높입니다."},
+        {"ko": "WMT 2014 영어-프랑스어 번역 과제에서는, 8개의 GPU로 3.5일간 학습한 뒤 41.8이라는 새로운 단일 모델 최고 BLEU 점수를 세웠는데, 이는 기존 최고 모델들의 학습 비용에 비하면 아주 일부에 불과하다.", "note": "a small fraction of ...는 앞 문장 전체를 받는 동격 구문. 콤마 뒤에 명사구를 놓아 부연하는 방식입니다."},
+        {"ko": "우리는 Transformer가 학습 데이터가 많을 때든 적을 때든 영어 구문 분석에 성공적으로 적용됨을 보임으로써, 다른 과제에도 잘 일반화됨을 보인다.", "note": "by applying it ...: by + 동명사는 '~함으로써'라는 방법. both A and B가 large와 limited를 묶습니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro1",
+      "title": "1 Introduction — RNN의 근본적 한계",
+      "src": ["p008", "p009"],
+      "structure": [
+        "현황 인정: RNN, LSTM, GRU가 시퀀스 모델링의 최신 기술로 확고히 자리잡았다",
+        "구조 설명: RNN은 위치를 시간 스텝에 맞춰 hidden state를 순차적으로 만든다",
+        "핵심 문제 제기: 이 순차성 때문에 학습 예제 안에서 병렬화가 불가능하다",
+        "반론 선점: 최근 연구들이 효율을 개선했음을 인정한다",
+        "그럼에도 남는 것: 순차 계산이라는 근본 제약은 그대로다"
+      ],
+      "key_concepts": {
+        "LSTM / gated recurrent": "RNN이 긴 시퀀스에서 정보를 잃는 문제를 게이트(문)로 완화한 변형들. 2017년 당시의 표준이었습니다.",
+        "state of the art": "그 시점에서 가장 성능이 좋은 방법. 논문에서 SOTA로 줄여 씁니다.",
+        "hidden state (h_t)": "시점 t까지 본 정보를 압축해 담은 벡터. h_t는 h_{t-1}과 t번째 입력으로 계산되므로, 앞을 계산해야 뒤를 계산할 수 있습니다.",
+        "parallelization": "여러 계산을 GPU에서 동시에 수행하는 것. RNN은 h_1 → h_2 → h_3 순서를 지켜야 해서 이게 막힙니다.",
+        "batching": "여러 예제를 묶어 한 번에 처리하는 것. 시퀀스가 길면 메모리 한계로 배치를 크게 잡을 수 없습니다.",
+        "factorization tricks / conditional computation": "RNN 계산량을 줄이려던 당시의 개선 시도들. 저자들은 이들을 인정하되 근본 해결은 아니라고 선을 긋습니다."
+      },
+      "summary": "RNN 계열이 시퀀스 모델링의 표준으로 자리잡았지만, 구조상 앞 시점의 hidden state를 계산해야 다음을 계산할 수 있다. 이 순차성이 병렬화를 막고, 시퀀스가 길수록 메모리 제약과 맞물려 치명적이 된다. 효율을 개선한 최근 연구들이 있었지만 순차 계산이라는 근본 제약은 여전히 남아 있다.",
+      "sentences_ko": [
+        {"ko": "순환 신경망, 특히 long short-term memory와 gated recurrent 신경망은 언어 모델링과 기계번역 같은 시퀀스 모델링 및 변환 문제에서 최신 기술로 확고히 자리잡아 왔다.", "note": "have been firmly established는 현재완료 수동태로 '~해 왔고 지금도 그렇다'. in particular가 앞의 목록을 좁힙니다."},
+        {"ko": "그 이후로도 순환 언어 모델과 encoder-decoder 구조의 한계를 넓히려는 수많은 노력이 이어져 왔다.", "note": "push the boundaries of ~: ~의 한계를 밀어붙이다, 즉 성능을 더 끌어올리다."},
+        {"ko": "순환 모델은 일반적으로 입력과 출력 시퀀스의 기호 위치를 따라 계산을 분해한다.", "note": "factor computation along ~: 계산을 ~을 따라 쪼개다. factor가 여기서는 동사입니다."},
+        {"ko": "위치를 계산 시간의 스텝에 맞춰 정렬하면서, 이 모델들은 이전 hidden state h_{t-1}과 위치 t의 입력을 함수로 받아 hidden state h_t의 시퀀스를 생성한다.", "note": "Aligning ...은 문두 분사구문으로 주절과 동시에 일어나는 동작. as a function of ~는 '~를 입력으로 하는 함수로서'."},
+        {"ko": "이처럼 본질적으로 순차적인 성질은 학습 예제 내부에서의 병렬화를 불가능하게 하는데, 이는 시퀀스 길이가 길어질수록 치명적이 된다. 메모리 제약이 예제 간 배치 처리를 제한하기 때문이다.", "note": "preclude: 불가능하게 하다(막다). which becomes ...는 앞 절 전체를 받는 계속적 용법이고, as는 이유를 나타냅니다."},
+        {"ko": "최근 연구는 factorization 기법과 conditional computation을 통해 계산 효율에서 상당한 개선을 이루었고, 후자의 경우에는 모델 성능까지 향상시켰다.", "note": "the latter는 앞의 둘 중 뒤엣것, 즉 conditional computation을 가리킵니다. 반론을 미리 인정하는 문장입니다."},
+        {"ko": "그러나 순차 계산이라는 근본적인 제약은 여전히 남아 있다.", "note": "however가 문장 중간에 콤마로 삽입되어 앞 문장을 뒤집습니다. 이 단락의 결론이자 논문 전체의 출발점입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "intro2",
+      "title": "1 Introduction — Transformer 제안",
+      "src": ["p010", "p011"],
+      "structure": [
+        "attention의 장점 소개: 거리와 무관하게 의존 관계를 모델링할 수 있다",
+        "그런데 한계 지적: 거의 모든 경우 attention은 RNN과 함께 쓰인다",
+        "제안: recurrence를 버리고 attention에만 의존하는 Transformer",
+        "성과 예고: 병렬화가 크게 늘고, GPU 8장 12시간 학습으로 최고 성능에 도달한다"
+      ],
+      "key_concepts": {
+        "dependency without regard to distance": "두 단어가 문장에서 아무리 멀리 떨어져 있어도 직접 연결할 수 있다는 뜻. RNN은 멀수록 신호가 약해집니다.",
+        "in conjunction with": "~와 함께. 여기서는 attention이 독립적으로 쓰이지 못하고 RNN에 얹혀 쓰였다는 지적입니다.",
+        "eschew": "의도적으로 피하다, 쓰지 않다. dispense with와 같은 맥락으로 쓰였습니다.",
+        "global dependencies": "입력과 출력 전체에 걸친 관계. attention은 모든 위치 쌍을 한 번에 연결합니다.",
+        "P100 GPU": "2016년 NVIDIA의 고성능 GPU. '8장으로 12시간'은 당시 기준으로 매우 저렴한 학습 비용이었습니다."
+      },
+      "summary": "attention은 거리와 상관없이 의존 관계를 모델링할 수 있어 널리 쓰이게 됐지만, 거의 언제나 RNN에 얹어 쓰는 보조 장치였다. 이 논문은 recurrence를 완전히 버리고 attention만으로 입력과 출력 사이의 전역 의존 관계를 뽑아내는 Transformer를 제안한다. 그 결과 병렬화가 훨씬 잘 되고, GPU 8장으로 12시간만 학습해도 번역 품질에서 최고 기록에 도달한다.",
+      "sentences_ko": [
+        {"ko": "attention 메커니즘은 다양한 과제에서 설득력 있는 시퀀스 모델링 및 변환 모델의 필수 요소가 되었으며, 입력이나 출력 시퀀스에서 거리에 상관없이 의존 관계를 모델링할 수 있게 해준다.", "note": "allowing ...은 결과를 나타내는 분사구문. without regard to ~는 '~와 무관하게'라는 관용구입니다."},
+        {"ko": "그러나 몇몇 사례를 제외한 거의 모든 경우, 그러한 attention 메커니즘은 순환 신경망과 함께 사용된다.", "note": "in all but a few cases: '몇 가지를 뺀 전부에서', 즉 '거의 언제나'. but이 except의 뜻으로 쓰인 중요한 용법입니다."},
+        {"ko": "이 연구에서 우리는 recurrence를 배제하고 대신 입력과 출력 사이의 전역 의존 관계를 뽑아내기 위해 전적으로 attention 메커니즘에만 의존하는 모델 구조인 Transformer를 제안한다.", "note": "eschewing과 relying이 나란히 놓인 분사구문으로 둘 다 architecture를 꾸밉니다. instead가 두 동작을 대비시킵니다."},
+        {"ko": "Transformer는 훨씬 더 많은 병렬화를 가능하게 하며, P100 GPU 8장에서 단 12시간만 학습해도 번역 품질에서 새로운 최고 기록에 도달할 수 있다.", "note": "as little as ~는 '겨우 ~밖에 안 되는'이라는 강조 표현. 적은 비용을 부각합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "background",
+      "title": "2 Background — CNN 접근과 self-attention",
+      "src": ["p013", "p014"],
+      "structure": [
+        "동시대 경쟁자 소개: ByteNet, ConvS2S 등이 CNN으로 병렬 계산을 시도했다",
+        "그 한계: 두 위치를 연결하는 데 필요한 연산 수가 거리에 비례해 늘어난다",
+        "결과: 멀리 떨어진 위치 사이의 의존 관계를 배우기 어렵다",
+        "Transformer의 대비: 이를 상수 번의 연산으로 줄이되, 해상도 손실은 Multi-Head Attention으로 보완한다",
+        "self-attention 정의: 한 시퀀스 안의 서로 다른 위치를 연결하는 attention"
+      ],
+      "key_concepts": {
+        "ConvS2S / ByteNet": "CNN으로 시퀀스 변환을 하려던 당시의 경쟁 모델들. 병렬화는 되지만 거리 문제는 남았습니다.",
+        "grows in the distance": "거리가 멀어질수록 커진다. ConvS2S는 선형(거리에 비례), ByteNet은 로그로 늘어납니다.",
+        "constant number of operations": "거리와 무관하게 항상 같은 횟수. Transformer의 결정적 장점으로, 표기로는 O(1)입니다.",
+        "effective resolution": "정보의 세밀함. attention은 여러 위치를 가중 평균하므로 개별 위치의 디테일이 흐려집니다.",
+        "self-attention (intra-attention)": "서로 다른 두 시퀀스가 아니라 한 시퀀스 내부의 위치들끼리 하는 attention. Transformer의 핵심 부품입니다.",
+        "textual entailment": "한 문장이 다른 문장을 논리적으로 함의하는지 판단하는 과제. self-attention이 이미 성공한 사례로 인용됩니다."
+      },
+      "summary": "순차 계산을 줄이려는 시도로 ByteNet, ConvS2S 같은 CNN 기반 모델이 나왔지만, 두 위치를 연결하는 연산 수가 거리에 따라 늘어나 먼 의존 관계 학습이 어려웠다. Transformer는 이를 거리와 무관한 상수 번의 연산으로 줄이며, 가중 평균 때문에 생기는 해상도 손실은 Multi-Head Attention으로 상쇄한다. self-attention은 한 시퀀스 내부의 위치들을 서로 연결하는 방식으로, 이미 여러 과제에서 성공한 바 있다.",
+      "sentences_ko": [
+        {"ko": "순차 계산을 줄인다는 목표는 Extended Neural GPU, ByteNet, ConvS2S의 토대이기도 한데, 이들은 모두 합성곱 신경망을 기본 구성 요소로 삼아 모든 입력과 출력 위치에 대해 hidden representation을 병렬로 계산한다.", "note": "all of which ...는 앞의 세 모델을 한꺼번에 받는 계속적 관계절. 콤마 + which 뒤에 all of가 붙는 형태입니다."},
+        {"ko": "이 모델들에서는 임의의 두 입력 또는 출력 위치의 신호를 연결하는 데 필요한 연산 수가 위치 간 거리에 따라 늘어나는데, ConvS2S는 선형으로, ByteNet은 로그 형태로 늘어난다.", "note": "linearly와 logarithmically가 동사 없이 병렬로 놓인 생략 구문. 앞의 grows가 두 곳에 모두 걸립니다."},
+        {"ko": "이 때문에 멀리 떨어진 위치들 사이의 의존 관계를 학습하기가 더 어려워진다.", "note": "This makes it more difficult to ...: it은 가목적어이고 진짜 목적어는 to learn 이하입니다."},
+        {"ko": "Transformer에서는 이것이 상수 번의 연산으로 줄어드는데, 다만 attention 가중치가 적용된 위치들을 평균 내면서 실효 해상도가 떨어지는 대가를 치른다. 이 효과는 3.2절에서 설명하는 Multi-Head Attention으로 상쇄한다.", "note": "albeit at the cost of ~: '비록 ~라는 대가를 치르지만'. 자기 방법의 약점을 스스로 밝히고 해결책까지 예고하는 구조입니다."},
+        {"ko": "때때로 intra-attention이라고도 불리는 self-attention은, 한 시퀀스의 표현을 계산하기 위해 그 시퀀스 내부의 서로 다른 위치들을 연결하는 attention 메커니즘이다.", "note": "sometimes called ~는 삽입된 과거분사구로 주어를 부연합니다. in order to ~가 목적을 나타냅니다."},
+        {"ko": "self-attention은 독해, 추상적 요약, 텍스트 함의, 과제 독립적 문장 표현 학습을 포함한 다양한 과제에서 성공적으로 사용되어 왔다.", "note": "has been used successfully는 현재완료 수동태. including 이하가 a variety of tasks의 구체적인 예시입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "arch",
+      "title": "3 Model Architecture — 전체 구조",
+      "src": ["p018", "p020"],
+      "structure": [
+        "일반론: 경쟁력 있는 시퀀스 변환 모델은 대개 encoder-decoder 구조다",
+        "encoder의 역할: 기호 표현 입력을 연속적인 표현 z로 변환한다",
+        "decoder의 역할: z를 받아 출력을 한 원소씩 생성한다",
+        "auto-regressive 성질: 각 단계에서 직전까지 만든 출력을 다시 입력으로 쓴다",
+        "Transformer의 위치: 이 큰 틀은 그대로 두고 내부를 self-attention과 완전연결 층으로 채웠다"
+      ],
+      "key_concepts": {
+        "symbol representations (x_1, ..., x_n)": "입력 문장의 각 토큰(단어 조각). n은 입력 길이입니다.",
+        "continuous representations z": "각 입력 위치에 대응하는 실수 벡터들. 이산적인 단어를 연속적인 숫자 공간으로 옮긴 것입니다.",
+        "auto-regressive": "이전에 만든 출력을 다시 입력으로 넣어 다음을 예측하는 방식. GPT가 글을 한 단어씩 이어 쓰는 원리가 바로 이것입니다.",
+        "point-wise fully connected layer": "각 위치에 독립적으로, 그러나 똑같은 가중치로 적용되는 완전연결 층. 위치마다 따로 계산되므로 병렬화가 쉽습니다.",
+        "stacked": "같은 층을 여러 겹 쌓은 것. Transformer는 6겹을 씁니다."
+      },
+      "summary": "경쟁력 있는 시퀀스 변환 모델은 대개 encoder-decoder 구조를 쓴다. encoder는 입력 토큰들을 연속 벡터 z로 바꾸고, decoder는 z를 받아 출력을 한 원소씩 만들어낸다. 이때 decoder는 auto-regressive해서 직전까지 생성한 기호를 다음 생성의 추가 입력으로 쓴다. Transformer는 이 전체 틀을 따르되, encoder와 decoder 내부를 쌓아 올린 self-attention과 위치별 완전연결 층으로 채운다.",
+      "sentences_ko": [
+        {"ko": "경쟁력 있는 신경망 시퀀스 변환 모델은 대부분 encoder-decoder 구조를 가진다.", "note": "Most competitive ...에서 most는 '대부분의'이지 '가장'이 아닙니다. 최상급으로 오해하기 쉬운 자리입니다."},
+        {"ko": "여기서 encoder는 기호 표현들의 입력 시퀀스 (x_1, ..., x_n)을 연속적인 표현들의 시퀀스 z = (z_1, ..., z_n)으로 매핑한다.", "note": "map A to B: A를 B로 대응시키다. 수학·기계학습 논문에서 아주 자주 나오는 동사입니다."},
+        {"ko": "z가 주어지면, decoder는 기호들의 출력 시퀀스 (y_1, ..., y_m)을 한 번에 한 원소씩 생성한다.", "note": "Given z는 분사구문으로 '~이 주어졌을 때'라는 조건. one element at a time이 생성 방식을 한정합니다."},
+        {"ko": "각 단계에서 이 모델은 auto-regressive해서, 다음 기호를 생성할 때 이전에 생성한 기호들을 추가 입력으로 소비한다.", "note": "consuming ...은 앞 절을 부연하는 분사구문. auto-regressive라는 용어를 문장 뒷부분이 그대로 풀어 설명합니다."},
+        {"ko": "Transformer는 이 전체 구조를 따르되, encoder와 decoder 양쪽 모두에 쌓아 올린 self-attention과 위치별 완전연결 층을 사용하며, 이는 각각 그림 1의 왼쪽과 오른쪽 절반에 나타나 있다.", "note": "respectively는 앞에서 나열한 순서대로 대응시키라는 신호입니다. encoder는 왼쪽, decoder는 오른쪽입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "encoder",
+      "title": "3.1 Encoder — encoder 스택",
+      "src": "p022",
+      "structure": [
+        "구성: 동일한 층 6개를 쌓는다",
+        "각 층의 두 부품: multi-head self-attention과 위치별 완전연결 신경망",
+        "안정화 장치: 두 부품 각각을 residual connection으로 감싸고 layer normalization을 적용한다",
+        "수식으로 표현: 각 부품의 출력은 LayerNorm(x + Sublayer(x))",
+        "차원 통일: residual connection이 가능하도록 모든 층의 출력 차원을 512로 맞춘다"
+      ],
+      "key_concepts": {
+        "N = 6 identical layers": "구조가 같은 층 6개. 가중치는 층마다 다르고 모양만 같습니다.",
+        "sub-layer": "한 층 안의 부품. encoder 층은 attention 부품과 feed-forward 부품 두 개로 이루어집니다.",
+        "residual connection": "부품의 출력에 원래 입력 x를 그대로 더하는 지름길. ResNet에서 온 아이디어로, 깊은 신경망의 학습을 가능하게 합니다.",
+        "layer normalization": "각 층의 출력 분포를 평균 0, 분산 1 근처로 정규화해 학습을 안정시키는 기법.",
+        "LayerNorm(x + Sublayer(x))": "Transformer 한 부품의 전체 동작을 한 줄로 쓴 식. x를 더하는 부분이 residual, 바깥이 정규화입니다.",
+        "d_model = 512": "모델 전체가 공유하는 벡터 차원. residual connection이 성립하려면 더하는 두 벡터의 차원이 같아야 하므로 통일이 필요합니다."
+      },
+      "summary": "encoder는 동일한 구조의 층 6개를 쌓아 만든다. 각 층은 multi-head self-attention과 위치별 완전연결 신경망이라는 두 부품으로 이루어지며, 각 부품은 residual connection으로 감싸인 뒤 layer normalization을 거친다. 즉 각 부품의 출력은 LayerNorm(x + Sublayer(x))이다. 이 덧셈이 성립하려면 차원이 같아야 하므로, 임베딩 층을 포함한 모든 부품의 출력 차원을 512로 통일한다.",
+      "sentences_ko": [
+        {"ko": "Encoder: encoder는 동일한 층 N = 6개를 쌓아 구성된다.", "note": "be composed of ~: ~로 구성되다. a stack of는 '겹겹이 쌓은 것'을 뜻합니다."},
+        {"ko": "각 층은 두 개의 하위 층을 가진다.", "note": "짧은 문장으로 구조의 뼈대를 먼저 던지고, 다음 문장에서 각각을 설명하는 전개 방식입니다."},
+        {"ko": "첫 번째는 multi-head self-attention 메커니즘이고, 두 번째는 단순한 위치별 완전연결 feed-forward 신경망이다.", "note": "The first ... and the second ...: 앞 문장의 two sub-layers를 순서대로 받는 표현입니다."},
+        {"ko": "우리는 두 하위 층 각각의 주위에 residual connection을 두고, 그 뒤에 layer normalization을 적용한다.", "note": "around each of ~: ~의 각각을 감싸는. followed by ~는 '그 뒤에 ~가 이어지는'이라는 순서 표현입니다."},
+        {"ko": "즉, 각 하위 층의 출력은 LayerNorm(x + Sublayer(x))이며, 여기서 Sublayer(x)는 그 하위 층 자체가 수행하는 함수다.", "note": "That is는 앞 문장을 수식으로 다시 말하겠다는 신호. where 이하는 수식의 기호를 정의하는 논문 관용 표현입니다."},
+        {"ko": "이러한 residual connection을 가능하게 하기 위해, 모델의 모든 하위 층과 임베딩 층은 d_model = 512 차원의 출력을 만들어낸다.", "note": "To facilitate ~는 목적을 나타내는 부정사구. as well as가 sub-layers와 embedding layers를 묶습니다."}
+      ]
+    },
+    {
+      "paragraph_id": "decoder",
+      "title": "3.1 Decoder — decoder 스택과 마스킹",
+      "src": "p023",
+      "structure": [
+        "구성: decoder도 동일한 층 6개를 쌓는다",
+        "차이점 1: encoder 출력을 대상으로 attention하는 세 번째 하위 층이 추가된다",
+        "공통점: residual connection과 layer normalization은 똑같이 적용한다",
+        "차이점 2: self-attention에서 뒤쪽 위치를 보지 못하도록 막는다",
+        "그 이유: 출력 임베딩을 한 칸 밀어둔 것과 합쳐, 위치 i의 예측이 i보다 앞의 정답에만 의존하게 만든다"
+      ],
+      "key_concepts": {
+        "third sub-layer": "decoder에만 있는 encoder-decoder attention. decoder가 입력 문장을 참조하는 통로입니다.",
+        "attending to subsequent positions": "뒤에 올 위치를 들여다보는 것. 번역할 때 정답을 미리 훔쳐보는 셈이라 반드시 막아야 합니다.",
+        "masking": "attention 점수에서 보면 안 되는 위치를 -무한대로 만들어 softmax 후 가중치가 0이 되게 하는 기법.",
+        "offset by one position": "출력 임베딩을 한 칸 오른쪽으로 밀어 넣는 것. 위치 i를 예측할 때 i-1까지만 입력으로 들어오게 합니다.",
+        "auto-regressive property": "미래를 보지 않고 과거만 보고 다음을 예측하는 성질. 학습 때와 실제 생성 때의 조건을 같게 맞추려면 꼭 지켜야 합니다."
+      },
+      "summary": "decoder도 동일한 층 6개로 이루어지지만, encoder 층의 두 부품에 더해 encoder 출력을 대상으로 multi-head attention을 수행하는 세 번째 부품이 들어간다. residual connection과 layer normalization은 encoder와 동일하다. 다만 decoder의 self-attention은 뒤쪽 위치를 보지 못하도록 마스킹하며, 출력 임베딩을 한 칸 미뤄둔 것과 합쳐져 위치 i의 예측이 i보다 앞의 출력에만 의존하도록 보장한다.",
+      "sentences_ko": [
+        {"ko": "Decoder: decoder 역시 동일한 층 N = 6개를 쌓아 구성된다.", "note": "also가 앞 단락의 encoder와 같다는 점을 이어받습니다."},
+        {"ko": "각 encoder 층에 있는 두 하위 층에 더해, decoder는 encoder 스택의 출력을 대상으로 multi-head attention을 수행하는 세 번째 하위 층을 삽입한다.", "note": "In addition to ~: ~에 더하여. which performs ... 관계절이 세 번째 부품의 역할을 정의합니다."},
+        {"ko": "encoder와 마찬가지로, 우리는 각 하위 층 주위에 residual connection을 두고 그 뒤에 layer normalization을 적용한다.", "note": "Similar to ~는 앞서 설명한 내용을 반복하지 않고 넘기는 장치입니다."},
+        {"ko": "또한 우리는 decoder 스택의 self-attention 하위 층을 수정하여, 각 위치가 그보다 뒤에 오는 위치들에 attention하지 못하도록 막는다.", "note": "prevent A from -ing: A가 ~하는 것을 막다. 전치사 from 뒤에는 반드시 동명사가 옵니다."},
+        {"ko": "이 마스킹은 출력 임베딩이 한 위치만큼 밀려 있다는 사실과 결합되어, 위치 i에 대한 예측이 i보다 작은 위치의 이미 알려진 출력에만 의존할 수 있도록 보장한다.", "note": "combined with ~는 주어를 꾸미는 과거분사구. ensures that 이하가 이 설계의 최종 목적입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "attn-def",
+      "title": "3.2 Attention — attention과 Scaled Dot-Product",
+      "src": ["p025", "p027"],
+      "drop": [3],
+      "fix": {
+        "2": "The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key."
+      },
+      "structure": [
+        "정의: attention은 query와 key-value 쌍들을 출력으로 매핑하는 함수다",
+        "계산 방식: 출력은 value들의 가중합이고, 가중치는 query와 key의 호환성 함수로 정한다",
+        "이 논문의 구체적 방식 명명: Scaled Dot-Product Attention",
+        "입력 차원 정의: query와 key는 d_k, value는 d_v 차원",
+        "3단계 계산: query와 모든 key의 내적 → √d_k로 나누기 → softmax로 가중치 만들기"
+      ],
+      "key_concepts": {
+        "query / key / value": "검색에 빗댄 이름. query는 '내가 찾는 것', key는 '각 항목의 색인', value는 '실제로 가져올 내용'입니다.",
+        "weighted sum": "여러 벡터에 가중치를 곱해 더한 것. 가중치 합이 1이면 가중 평균이 됩니다.",
+        "compatibility function": "query와 key가 얼마나 잘 맞는지 재는 함수. 이 논문에서는 단순한 내적을 씁니다.",
+        "dot product (내적)": "두 벡터를 원소끼리 곱해 모두 더한 값. 방향이 비슷할수록 커지므로 유사도로 쓸 수 있습니다.",
+        "√d_k로 나누기": "이 논문이 'Scaled'라고 이름 붙인 이유. 다음 단락에서 그 필요성을 설명합니다.",
+        "softmax": "여러 점수를 합이 1인 확률 분포로 바꾸는 함수. 여기서는 각 value에 줄 가중치가 됩니다."
+      },
+      "summary": "attention은 query와 key-value 쌍의 집합을 받아 출력을 내놓는 함수이며, query·key·value·출력이 모두 벡터다. 출력은 value들의 가중합이고, 각 value의 가중치는 query와 대응하는 key의 호환성 함수로 계산된다. 이 논문이 쓰는 방식은 Scaled Dot-Product Attention으로, query와 모든 key의 내적을 구해 √d_k로 나눈 뒤 softmax를 적용해 value에 줄 가중치를 얻는다.",
+      "sentences_ko": [
+        {"ko": "attention 함수는 query 하나와 key-value 쌍의 집합을 출력으로 매핑하는 것으로 설명할 수 있으며, 여기서 query, key, value, 출력은 모두 벡터다.", "note": "be described as -ing: ~하는 것으로 설명되다. where 이하가 등장한 용어들을 한꺼번에 정의합니다."},
+        {"ko": "출력은 value들의 가중합으로 계산되며, 각 value에 배정되는 가중치는 query와 그에 대응하는 key의 호환성 함수로 계산된다.", "note": "assigned to each value는 the weight를 꾸미는 과거분사구. 문장의 진짜 동사는 뒤의 is computed입니다."},
+        {"ko": "우리는 우리가 쓰는 특정한 attention을 \"Scaled Dot-Product Attention\"이라고 부른다.", "note": "We call A B: A를 B라고 부르다. 논문에서 새 용어를 도입하는 표준 문형입니다."},
+        {"ko": "입력은 d_k 차원의 query와 key, 그리고 d_v 차원의 value로 이루어진다.", "note": "consist of ~: ~로 구성되다. 수동태로 쓰지 않는 자동사라는 점이 시험에 자주 나옵니다."},
+        {"ko": "우리는 query와 모든 key의 내적을 계산하고, 각각을 √d_k로 나눈 뒤, softmax 함수를 적용해 value에 줄 가중치를 얻는다.", "note": "compute, divide, apply 세 동사가 and로 병렬 연결되어 계산 절차를 순서대로 서술합니다."}
+      ]
+    },
+    {
+      "paragraph_id": "scaling",
+      "title": "3.2.1 왜 √d_k로 나누는가",
+      "src": "p030",
+      "fix": {
+        "2": "We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients."
+      },
+      "structure": [
+        "관찰: d_k가 작으면 두 attention 방식의 성능이 비슷하다",
+        "문제 상황: d_k가 크면 스케일링 없는 내적 attention이 additive attention보다 나빠진다",
+        "원인 추정: 내적 값이 커지면 softmax가 기울기가 거의 0인 영역으로 밀려난다",
+        "해결: 내적을 1/√d_k로 스케일링한다"
+      ],
+      "key_concepts": {
+        "d_k": "query와 key 벡터의 차원. 이 값이 커질수록 내적에 더해지는 항이 많아져 값의 크기가 커집니다.",
+        "additive attention": "내적 대신 작은 신경망으로 호환성을 계산하는 이전 방식. 이론적 복잡도는 비슷하지만 실제로는 더 느립니다.",
+        "grow large in magnitude": "절댓값이 커지다. 부호와 무관하게 크기가 커진다는 뜻입니다.",
+        "vanishing gradient": "기울기가 0에 가까워져 학습이 진행되지 않는 현상. softmax는 입력 값 차이가 크면 이 영역으로 들어갑니다.",
+        "scaling": "값을 일정 비율로 줄이는 것. 여기서는 1/√d_k를 곱해 내적의 분산을 1 근처로 되돌립니다."
+      },
+      "summary": "d_k가 작을 때는 내적 방식과 additive 방식의 성능이 비슷하지만, d_k가 커지면 스케일링 없는 내적 attention이 뒤처진다. 저자들은 d_k가 크면 내적 값의 절댓값이 커져 softmax가 기울기가 극히 작은 영역으로 밀려나기 때문이라고 추정한다. 이를 막기 위해 내적에 1/√d_k를 곱해 스케일을 줄인다.",
+      "sentences_ko": [
+        {"ko": "d_k가 작은 값일 때는 두 메커니즘이 비슷하게 동작하지만, d_k가 커지면 additive attention이 스케일링하지 않은 내적 attention보다 더 좋은 성능을 낸다.", "note": "While이 문두에 오면 '~인 반면'이라는 대조. without scaling이 문제의 조건을 한정합니다."},
+        {"ko": "우리는 d_k가 큰 값일 때 내적의 절댓값이 커지면서 softmax 함수를 기울기가 극히 작은 영역으로 밀어넣기 때문이라고 추정한다.", "note": "We suspect that ~: 확정이 아닌 추정을 밝히는 표현. pushing 이하는 결과를 나타내는 분사구문입니다."},
+        {"ko": "이 효과를 상쇄하기 위해, 우리는 내적에 1/√d_k를 곱해 스케일을 조정한다.", "note": "To counteract ~는 목적을 나타내는 부정사구. counteract는 '반대로 작용해 없애다'라는 뜻입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "multihead",
+      "title": "3.2.2 Multi-Head Attention",
+      "src": ["p032", "p033", "p035"],
+      "drop": [3],
+      "fix": {
+        "2": "On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional output values."
+      },
+      "structure": [
+        "설계: 큰 차원으로 한 번 attention하는 대신, 서로 다른 학습된 사영으로 h번 나눠 투영한다",
+        "병렬 수행: 투영된 각 버전에 대해 attention을 동시에 수행한다",
+        "결합: 결과를 이어붙인 뒤 다시 한 번 사영해 최종 출력을 만든다",
+        "이유: 서로 다른 표현 부분공간의 정보를 동시에 볼 수 있게 한다",
+        "설정과 비용: h = 8, 각 헤드는 64차원이며 전체 계산량은 단일 헤드와 비슷하다"
+      ],
+      "key_concepts": {
+        "linear projection": "행렬을 곱해 벡터를 다른 차원 공간으로 옮기는 것. 여기서는 학습되는 가중치 행렬입니다.",
+        "head": "독립적으로 attention을 수행하는 한 갈래. 8개의 헤드가 서로 다른 관점으로 문장을 봅니다.",
+        "representation subspace": "전체 벡터 공간의 일부 영역. 어떤 헤드는 문법 관계를, 다른 헤드는 의미 관계를 담당하는 식으로 나뉩니다.",
+        "averaging inhibits this": "평균이 이것을 방해한다. 헤드가 하나면 여러 관점이 뭉개져 평균으로 사라진다는 뜻입니다.",
+        "concatenate": "여러 벡터를 옆으로 이어붙이는 것. 8개 헤드의 64차원 출력을 이으면 512차원이 됩니다.",
+        "d_k = d_v = d_model/h = 64": "차원을 헤드 수로 나눠 배분한 값. 이렇게 하면 헤드를 늘려도 총 계산량이 늘지 않습니다."
+      },
+      "summary": "d_model 차원 그대로 attention을 한 번 수행하는 대신, query·key·value를 서로 다른 학습된 사영으로 h번 투영해 각각 낮은 차원으로 보낸다. 투영된 버전마다 attention을 병렬로 수행하고, 결과를 이어붙인 뒤 다시 사영해 최종 출력을 얻는다. 이렇게 하면 서로 다른 표현 부분공간의 정보를 동시에 볼 수 있으며, 헤드가 하나뿐이면 평균 때문에 이것이 막힌다. 이 논문은 h = 8, 헤드당 64차원을 쓰는데, 차원을 줄였기 때문에 총 계산 비용은 단일 헤드와 비슷하다.",
+      "sentences_ko": [
+        {"ko": "d_model 차원의 key, value, query로 attention 함수를 한 번 수행하는 대신, 우리는 query, key, value를 각각 서로 다른 학습된 선형 사영을 사용해 d_k, d_k, d_v 차원으로 h번 투영하는 것이 유익하다는 것을 발견했다.", "note": "Instead of -ing가 문두에 와서 기존 방식과 대비합니다. found it beneficial to ~에서 it은 가목적어입니다."},
+        {"ko": "그런 다음 투영된 query, key, value의 각 버전에 대해 attention 함수를 병렬로 수행하여, d_v 차원의 출력 값을 얻는다.", "note": "yielding ~는 결과를 나타내는 분사구문. 문두의 On each of ~가 전치사구로 앞으로 나온 도치 형태입니다."},
+        {"ko": "이 출력들은 이어붙여진 뒤 다시 한 번 사영되어 최종 값이 되며, 이는 그림 2에 나타나 있다.", "note": "are concatenated and projected로 수동태 두 개가 병렬 연결됩니다. resulting in ~은 결과를 나타냅니다."},
+        {"ko": "multi-head attention은 모델이 서로 다른 위치에 있는 서로 다른 표현 부분공간의 정보에 동시에 attention할 수 있게 해준다.", "note": "allow A to B: A가 B할 수 있게 하다. jointly가 '여러 개를 동시에'라는 핵심 의미를 담습니다."},
+        {"ko": "attention 헤드가 하나뿐이면, 평균 연산이 이것을 방해한다.", "note": "짧은 문장으로 앞 문장의 장점을 뒤집어 강조합니다. this는 앞 문장의 'jointly attend'를 가리킵니다."},
+        {"ko": "이 연구에서 우리는 h = 8개의 병렬 attention 층, 즉 헤드를 사용한다.", "note": "or heads에서 or는 '또는'이 아니라 '즉'이라는 동격 표현입니다."},
+        {"ko": "이들 각각에 대해 우리는 d_k = d_v = d_model/h = 64를 사용한다.", "note": "차원을 헤드 수로 나눈다는 설계 결정이 다음 문장의 근거가 됩니다."},
+        {"ko": "각 헤드의 차원이 줄었기 때문에, 총 계산 비용은 전체 차원을 쓰는 단일 헤드 attention과 비슷하다.", "note": "Due to ~는 이유를 나타내는 전치사구. 성능은 올리면서 비용은 그대로라는 설득의 마무리입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "posenc",
+      "title": "3.5 Positional Encoding — 위치 정보 주입",
+      "src": ["p049", "p053"],
+      "structure": [
+        "문제: recurrence도 convolution도 없으므로 모델이 순서를 알 수 없다",
+        "해결: 입력 임베딩에 positional encoding을 더한다",
+        "제약 조건: 더하려면 임베딩과 차원이 같아야 한다",
+        "선택지: 학습형과 고정형 두 가지가 있다",
+        "실험 결과와 선택 이유: 성능은 거의 같았지만, 학습 때보다 긴 시퀀스로 외삽할 가능성 때문에 sinusoid를 택했다"
+      ],
+      "key_concepts": {
+        "positional encoding": "각 위치를 나타내는 벡터. 이것을 더해야 모델이 '첫 번째 단어'와 '다섯 번째 단어'를 구분합니다.",
+        "inject": "주입하다, 넣어주다. 구조상 없는 정보를 인위적으로 넣는다는 뉘앙스입니다.",
+        "relative or absolute position": "상대 위치(두 단어가 몇 칸 떨어졌는지)와 절대 위치(몇 번째인지). 둘 다 유용한 정보입니다.",
+        "sinusoidal": "사인·코사인 함수로 만든 것. 주기가 다른 파동을 겹쳐 위치를 표현합니다.",
+        "learned positional embeddings": "위치 벡터를 데이터로부터 학습하는 방식. 학습에 없던 길이는 표현할 수 없다는 약점이 있습니다.",
+        "extrapolate": "학습 범위 밖으로 외삽하다. 사인 함수는 어떤 위치든 계산할 수 있어 긴 문장에도 값을 만들 수 있습니다."
+      },
+      "summary": "Transformer에는 recurrence도 convolution도 없어서 토큰의 순서 정보가 구조적으로 들어오지 않는다. 그래서 encoder와 decoder 스택 맨 아래에서 입력 임베딩에 positional encoding을 더해주며, 더하기 위해 차원을 임베딩과 같게 맞춘다. 학습형 위치 임베딩도 실험했지만 결과는 거의 같았고, 학습 때 본 것보다 긴 시퀀스로 외삽할 수 있다는 이유로 sinusoid 방식을 선택했다.",
+      "sentences_ko": [
+        {"ko": "우리 모델에는 recurrence도 convolution도 없기 때문에, 모델이 시퀀스의 순서를 활용하려면 우리가 토큰의 상대적 또는 절대적 위치에 관한 정보를 어떤 식으로든 주입해야 한다.", "note": "Since가 이유를, in order for the model to ~가 목적을 나타냅니다. for + 목적어 + to부정사는 부정사의 주체를 밝히는 형태입니다."},
+        {"ko": "이를 위해 우리는 encoder와 decoder 스택의 맨 아래에서 입력 임베딩에 \"positional encoding\"을 더한다.", "note": "To this end: 이 목적을 위해. 앞 문장에서 제기한 필요를 받아 해법으로 넘어가는 연결어입니다."},
+        {"ko": "positional encoding은 임베딩과 동일한 차원 d_model을 가지므로, 둘을 더할 수 있다.", "note": "so that ~은 결과 또는 목적을 나타내는 절. 차원을 맞춘 이유가 덧셈 가능성임을 밝힙니다."},
+        {"ko": "positional encoding에는 학습되는 것과 고정된 것 등 여러 선택지가 있다.", "note": "learned and fixed가 choices를 뒤에서 한정하는 형용사 병렬입니다."},
+        {"ko": "우리는 대신 학습된 위치 임베딩을 사용하는 것도 실험해 보았고, 두 방식이 거의 동일한 결과를 낸다는 것을 발견했다.", "note": "experimented with -ing: ~하는 것을 실험해 보다. instead가 앞의 sinusoid 방식과 대비됩니다."},
+        {"ko": "우리가 sinusoid 방식을 선택한 것은, 그것이 학습 중에 접한 것보다 더 긴 시퀀스 길이로 모델이 외삽할 수 있게 해줄지도 모르기 때문이다.", "note": "may allow ~는 확신이 아닌 가능성. 논문에서 근거가 실험으로 뒷받침되지 않을 때 쓰는 신중한 표현입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "why-self1",
+      "title": "4 Why Self-Attention — 세 가지 평가 기준",
+      "src": ["p055", "p056", "p057"],
+      "structure": [
+        "비교 대상 설정: self-attention 층을 recurrent 층, convolutional 층과 비교한다",
+        "비교 기준을 세 가지로 명시한다",
+        "기준 1: 층당 총 계산 복잡도",
+        "기준 2: 병렬화 가능한 계산량, 즉 필요한 최소 순차 연산 수",
+        "기준 3: 장거리 의존 관계 사이의 경로 길이 — 짧을수록 학습이 쉽다"
+      ],
+      "key_concepts": {
+        "desiderata": "갖추었으면 하는 요건들(desideratum의 복수형). 논문에서 평가 기준을 나열할 때 쓰는 격식 있는 단어입니다.",
+        "computational complexity per layer": "층 하나를 계산하는 데 드는 총 연산량. self-attention은 O(n²·d), RNN은 O(n·d²)입니다.",
+        "sequential operations": "반드시 순서대로 해야 하는 연산의 수. self-attention은 O(1), RNN은 O(n)이라 이 차이가 병렬화를 가릅니다.",
+        "path length": "한 위치의 정보가 다른 위치까지 가는 데 거쳐야 하는 층의 수. 신호가 지나야 할 거리입니다.",
+        "long-range dependency": "멀리 떨어진 두 요소 사이의 관계. 예를 들어 문장 앞의 주어와 맨 뒤의 동사를 맞추는 일입니다.",
+        "forward and backward signals": "순전파 때 흐르는 정보와 역전파 때 흐르는 기울기. 둘 다 경로가 길수록 약해집니다."
+      },
+      "summary": "이 절은 self-attention 층을 시퀀스 변환에서 흔히 쓰는 recurrent 층, convolutional 층과 비교한다. 비교 기준은 세 가지다. 층당 총 계산 복잡도, 병렬화할 수 있는 계산량, 그리고 네트워크 안에서 장거리 의존 관계를 잇는 경로의 길이다. 특히 세 번째가 중요한데, 순전파와 역전파 신호가 지나야 할 경로가 짧을수록 먼 관계를 학습하기 쉬워지기 때문이다.",
+      "sentences_ko": [
+        {"ko": "이 절에서 우리는 self-attention 층의 여러 측면을, 하나의 가변 길이 기호 표현 시퀀스 (x_1, ..., x_n)을 같은 길이의 다른 시퀀스 (z_1, ..., z_n)으로 매핑하는 데 흔히 쓰이는 recurrent 층 및 convolutional 층과 비교한다. 여기서 x_i, z_i는 d차원 실수 벡터이며, 전형적인 시퀀스 변환 encoder나 decoder의 hidden layer가 그런 예다.", "note": "compare A to B: A를 B와 비교하다. commonly used for ~는 layers를 꾸미는 과거분사구입니다."},
+        {"ko": "self-attention을 사용하는 근거로서 우리는 세 가지 요건을 고려한다.", "note": "Motivating our use of ~는 문두 분사구문. desiderata는 '있어야 할 요건들'이라는 라틴어 유래 복수형입니다."},
+        {"ko": "하나는 층당 총 계산 복잡도다.", "note": "One is ... Another is ... The third is ...로 이어지는 열거 패턴이 세 문장에 걸쳐 나타납니다."},
+        {"ko": "다른 하나는 병렬화될 수 있는 계산량이며, 이는 요구되는 최소 순차 연산 수로 측정된다.", "note": "as measured by ~: ~로 측정되는 바에 따르면. 추상적 기준을 구체적 지표로 바꿔주는 표현입니다."},
+        {"ko": "세 번째는 네트워크 안에서 장거리 의존 관계 사이의 경로 길이다.", "note": "앞의 One, Another를 받아 열거를 닫습니다."},
+        {"ko": "장거리 의존 관계를 학습하는 것은 많은 시퀀스 변환 과제에서 핵심 난제다.", "note": "동명사구 Learning ~이 주어입니다. 왜 세 번째 기준이 중요한지 설명을 시작하는 문장입니다."},
+        {"ko": "그러한 의존 관계를 학습하는 능력에 영향을 주는 핵심 요인 하나는, 순전파와 역전파 신호가 네트워크에서 지나가야 하는 경로의 길이다.", "note": "affecting ~이 One key factor를 꾸미고, forward and backward signals have to traverse는 앞의 paths를 꾸미는 관계절(that 생략)입니다."},
+        {"ko": "입력과 출력 시퀀스의 어떤 위치 조합 사이에서든 이 경로가 짧을수록, 장거리 의존 관계를 학습하기가 더 쉬워진다.", "note": "The 비교급 ~, the 비교급 ~: ~할수록 더 ~하다. 두 절 모두 be동사가 생략된 압축 형태입니다."},
+        {"ko": "따라서 우리는 서로 다른 층 유형으로 구성된 네트워크에서 임의의 두 입력 및 출력 위치 사이의 최대 경로 길이도 함께 비교한다.", "note": "Hence는 앞의 논리를 받아 결론으로 잇는 접속부사. composed of ~가 networks를 꾸밉니다."}
+      ]
+    },
+    {
+      "paragraph_id": "why-self2",
+      "title": "4 Why Self-Attention — 비교 결과",
+      "src": "p058",
+      "structure": [
+        "핵심 비교: self-attention은 상수 번의 순차 연산으로 모든 위치를 연결하지만 RNN은 O(n)번 필요하다",
+        "계산 복잡도 조건: 시퀀스 길이 n이 표현 차원 d보다 작을 때 self-attention이 더 빠르다",
+        "그 조건이 현실적임을 근거로 든다: word-piece, byte-pair 표현을 쓰는 실제 번역 모델이 대개 그렇다",
+        "약점 인정과 대안 제시: 아주 긴 시퀀스에서는 이웃 r개로 attention을 제한할 수 있다",
+        "그 대가와 향후 계획: 최대 경로 길이가 O(n/r)로 늘어나며, 추후 연구로 남긴다"
+      ],
+      "key_concepts": {
+        "constant number of sequentially executed operations": "순서대로 해야 하는 연산이 시퀀스 길이와 무관하게 일정하다는 뜻. 표기로 O(1)이며, 병렬화의 근거입니다.",
+        "O(n)": "시퀀스 길이 n에 비례해 늘어난다는 표기. RNN은 n개의 시점을 순서대로 밟아야 합니다.",
+        "sequence length n vs. representation dimensionality d": "문장의 토큰 수와 벡터 차원. n < d일 때 self-attention이 유리한데, 실제 번역 문장은 대개 512차원보다 짧습니다.",
+        "word-piece / byte-pair encoding": "단어를 더 작은 조각으로 쪼개는 토큰화 방식. 어휘 크기를 줄이면서 모르는 단어도 표현할 수 있습니다.",
+        "restricted self-attention": "각 위치가 주변 r개 이웃만 보도록 제한하는 변형. 계산량은 줄지만 먼 곳까지 가는 경로가 길어집니다.",
+        "O(n/r)": "이웃 r개로 제한했을 때의 최대 경로 길이. r이 작을수록 경로가 길어져 장거리 학습이 어려워집니다."
+      },
+      "summary": "표 1에서 보듯 self-attention 층은 상수 번의 순차 연산으로 모든 위치를 연결하는 반면, recurrent 층은 O(n)번의 순차 연산이 필요하다. 계산 복잡도로 보면 시퀀스 길이 n이 표현 차원 d보다 작을 때 self-attention이 더 빠른데, word-piece나 byte-pair 표현을 쓰는 실제 번역 모델에서는 대개 이 조건이 성립한다. 아주 긴 시퀀스를 다룰 때는 attention을 주변 이웃 r개로 제한할 수 있으며, 그 경우 최대 경로 길이는 O(n/r)로 늘어난다.",
+      "sentences_ko": [
+        {"ko": "표 1에서 언급했듯이, self-attention 층은 순차적으로 실행되는 상수 개의 연산만으로 모든 위치를 연결하는 반면, recurrent 층은 O(n)번의 순차 연산을 필요로 한다.", "note": "whereas는 '~인 반면'이라는 강한 대조 접속사. 논문에서 두 방법을 나란히 놓고 가를 때 자주 씁니다."},
+        {"ko": "계산 복잡도 측면에서 보면, self-attention 층은 시퀀스 길이 n이 표현 차원 d보다 작을 때 recurrent 층보다 빠른데, 이는 word-piece나 byte-pair 표현처럼 최신 기계번역 모델이 사용하는 문장 표현에서 대부분 해당하는 경우다.", "note": "In terms of ~: ~의 관점에서. which is most often the case는 앞 조건절 전체를 받아 '실제로 대개 그렇다'고 덧붙입니다."},
+        {"ko": "아주 긴 시퀀스를 다루는 과제에서 계산 성능을 높이려면, self-attention이 해당 출력 위치를 중심으로 하는 크기 r의 이웃만 고려하도록 제한할 수 있다.", "note": "To improve ~는 목적을 나타내는 부정사구. could be restricted to -ing는 가능성을 나타내는 수동태입니다."},
+        {"ko": "이렇게 하면 최대 경로 길이가 O(n/r)로 늘어날 것이다.", "note": "This would ~는 가정한 상황의 결과를 말하는 조건법. 대가를 솔직히 밝히는 문장입니다."},
+        {"ko": "우리는 이 접근을 향후 연구에서 더 살펴볼 계획이다.", "note": "future work는 논문에서 다루지 못한 부분을 남겨두는 관용 표현입니다."}
+      ]
+    },
+    {
+      "paragraph_id": "conclusion",
+      "title": "7 Conclusion — 결론",
+      "src": ["p098", "p099", "p100"],
+      "structure": [
+        "성취 요약: 전적으로 attention에만 기반한 최초의 시퀀스 변환 모델을 제시했다",
+        "구체적 대체: encoder-decoder에서 흔히 쓰던 recurrent 층을 multi-head self-attention으로 바꿨다",
+        "성능 근거 1 — 속도: RNN·CNN 기반보다 훨씬 빨리 학습된다",
+        "성능 근거 2 — 품질: 영-독, 영-불 두 과제에서 최고 기록을 세웠고 앙상블도 앞선다",
+        "향후 계획: 텍스트 외의 모달리티, 제한된 지역 attention, 덜 순차적인 생성"
+      ],
+      "key_concepts": {
+        "the first ... based entirely on attention": "attention만으로 만든 최초의 모델이라는 주장. 이 논문의 기여를 한 문장으로 압축한 표현입니다.",
+        "modalities other than text": "텍스트가 아닌 데이터 형태. 이미지, 오디오, 비디오를 가리키며, 이후 실제로 모두 Transformer로 흡수됩니다.",
+        "local, restricted attention": "전체가 아닌 일부 범위만 보는 attention. 긴 입력을 효율적으로 다루기 위한 방향입니다.",
+        "making generation less sequential": "생성 과정의 순차성을 줄이는 것. 학습은 병렬화했지만 생성은 여전히 한 토큰씩이라는 남은 숙제입니다.",
+        "state of the art": "최고 성능 기록. 여기서는 두 번역 과제 모두에서 갱신했다는 뜻입니다."
+      },
+      "summary": "이 논문은 전적으로 attention에 기반한 최초의 시퀀스 변환 모델 Transformer를 제시했고, encoder-decoder에서 흔히 쓰이던 recurrent 층을 multi-head self-attention으로 대체했다. 번역 과제에서 RNN이나 CNN 기반 구조보다 훨씬 빠르게 학습되며, 영-독과 영-불 두 과제 모두에서 최고 기록을 세웠고 영-독에서는 기존의 모든 앙상블까지 앞섰다. 저자들은 이미지·오디오·비디오 같은 다른 모달리티와 지역 제한 attention, 그리고 덜 순차적인 생성 방식을 다음 목표로 제시한다.",
+      "sentences_ko": [
+        {"ko": "이 연구에서 우리는 전적으로 attention에 기반한 최초의 시퀀스 변환 모델인 Transformer를 제시했으며, encoder-decoder 구조에서 가장 흔히 사용되던 recurrent 층을 multi-head self-attention으로 대체했다.", "note": "replacing ...은 앞 절을 부연하는 분사구문. 콤마 뒤 분사로 기여를 한 번 더 구체화하는 결론부의 전형입니다."},
+        {"ko": "번역 과제에서 Transformer는 recurrent 층이나 convolutional 층에 기반한 구조보다 훨씬 빠르게 학습될 수 있다.", "note": "significantly faster는 비교급 강조. than 뒤에 architectures가 생략 없이 나옵니다."},
+        {"ko": "WMT 2014 영어-독일어와 WMT 2014 영어-프랑스어 번역 과제 모두에서, 우리는 새로운 최고 성능을 달성한다.", "note": "On both A and B: A와 B 둘 다에서. 두 과제를 묶어 성과의 범위를 넓힙니다."},
+        {"ko": "앞의 과제에서는 우리의 최고 모델이 이전에 보고된 모든 앙상블마저 능가한다.", "note": "the former는 앞에서 언급한 둘 중 앞엣것, 즉 영어-독일어 과제를 가리킵니다. even이 주장의 강도를 높입니다."},
+        {"ko": "우리는 attention 기반 모델의 미래에 기대를 걸고 있으며, 이를 다른 과제에도 적용할 계획이다.", "note": "be excited about ~: ~에 대해 기대하다. 결론에서 향후 방향으로 넘어가는 전환 문장입니다."},
+        {"ko": "우리는 Transformer를 텍스트 이외의 입력·출력 모달리티가 관여하는 문제로 확장하고, 이미지·오디오·비디오 같은 큰 입력과 출력을 효율적으로 다루기 위한 지역적이고 제한된 attention 메커니즘을 연구할 계획이다.", "note": "plan to extend ... and to investigate ...로 to부정사 두 개가 병렬 연결됩니다. other than ~은 '~이 아닌'이라는 뜻입니다."},
+        {"ko": "생성 과정을 덜 순차적으로 만드는 것 또한 우리의 연구 목표 중 하나다.", "note": "동명사구 Making ~이 주어입니다. another가 앞서 밝힌 계획들에 하나를 더한다는 신호입니다."}
+      ]
+    }
+  ]
+}
