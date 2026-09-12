@@ -1,11 +1,11 @@
 # 논문읽기 도우미
 
 딥러닝 필독 논문 10편을 하루 한 단락씩 원문으로 읽는 앱입니다.
-`index.html` 하나만 브라우저로 열면 서버 없이 동작하고, 진행률은 브라우저에 저장됩니다.
+`nonmun_helper.html` 하나만 브라우저로 열면 서버 없이 동작하고, 진행률은 브라우저에 저장됩니다.
 
 ## 쓰는 법
 
-`index.html`을 더블클릭하면 끝입니다. 폰에서 보려면 이 파일 하나만 옮기면 됩니다.
+`nonmun_helper.html`을 더블클릭하면 끝입니다. 폰에서 보려면 이 파일 하나만 옮기면 됩니다.
 
 각 단락은 **구조 → 핵심 개념 → 요약 → 원문** 순서로 놓여 있습니다.
 앞의 셋을 먼저 읽고 원문에 들어가면, 모르는 문장을 만나도 맥락으로 버틸 수 있습니다.
@@ -49,7 +49,7 @@ Batch Norm은 Dropout·Adam 옆에, ViT·Diffusion·InstructGPT는 GPT-3 뒤에 
 
 ## 고칠 때
 
-`index.html`은 빌드 산출물이라 직접 고치지 마세요. 다음 두 곳을 고치고 다시 빌드합니다.
+`nonmun_helper.html`은 빌드 산출물이라 직접 고치지 마세요. 다음 두 곳을 고치고 다시 빌드합니다.
 
 - `template.html` — 화면과 동작
 - `data/<논문id>.json` — 해석, 구조, 핵심 개념, 요약
@@ -58,7 +58,7 @@ Batch Norm은 Dropout·Adam 옆에, ViT·Diffusion·InstructGPT는 GPT-3 뒤에 
 python3 build.py
 ```
 
-빌드는 `data/*.json`과 `data/raw/*.json`을 합쳐 `index.html`과 `papers.json`을 만듭니다.
+빌드는 `data/*.json`과 `data/raw/*.json`을 합쳐 `nonmun_helper.html`과 `papers.json`을 만듭니다.
 필드가 빠졌거나 영어 문장 수와 해석 개수가 어긋나면 어디가 잘못됐는지 알려주고 멈춥니다.
 
 검증만 하려면:
@@ -123,7 +123,7 @@ python3 -m venv .venv
 ## 파일
 
 ```
-index.html        완성본. 이것만 열면 됩니다 (빌드 산출물)
+nonmun_helper.html 완성본. 이것만 열면 됩니다 (빌드 산출물)
 template.html     화면과 동작
 data/<id>.json    논문별 해석·구조·개념·요약
 data/raw/<id>.*   PDF에서 뽑은 원문 (빌드 입력)

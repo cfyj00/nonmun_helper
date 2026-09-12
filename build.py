@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""data/*.json (논문별 해석·주석) + data/raw/*.json (PDF 추출 원문) + template.html → index.html
+"""data/*.json (논문별 해석·주석) + data/raw/*.json (PDF 추출 원문) + template.html → nonmun_helper.html
 
 사용법:
-    python3 build.py                     빌드 (index.html, papers.json 생성)
+    python3 build.py                     빌드 (nonmun_helper.html, papers.json 생성)
     python3 build.py --split <id> p012   raw 단락을 문장 단위로 쪼개 번호와 함께 출력 (해석 작성용)
     python3 build.py --check             빌드 없이 검증만
 
@@ -22,7 +22,7 @@ ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 TEMPLATE = ROOT / "template.html"
-OUT_HTML = ROOT / "index.html"
+OUT_HTML = ROOT / "nonmun_helper.html"
 OUT_JSON = ROOT / "papers.json"
 TOKEN = "/*__PAPERS_JSON__*/[]"
 
